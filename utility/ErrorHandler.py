@@ -8,4 +8,5 @@ class ErrorHandler:
 
     def return_error(self):
         self.rtn.msg = str(self.e)
+        self.rtn.state = False
         return self.rtn
