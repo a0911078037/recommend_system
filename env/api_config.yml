@@ -11,3 +11,4 @@ API:
   IP: '127.0.0.1'
   PORT: '8000'
   VERSION: 'v1'
+  SECRETKEY: ':\xa2EO\xe09\x1d\x87\xcf|\xb5\x8b'

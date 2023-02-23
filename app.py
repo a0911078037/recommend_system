@@ -9,6 +9,7 @@ config = load_env_file('./env/api_config.yml')
 if __name__ == '__main__':
     app = Flask(__name__)
     app.register_blueprint(api.bp, url_prefix='/api')
+    app.config['SECRET_KEY'] = config['API']['SECRETKEY']
     Api = Api(app)
     if config['API']['VERSION'] != 'v1':
         raise Exception('version required v1')

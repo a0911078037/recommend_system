@@ -35,6 +35,51 @@ class mysqlDB:
             if not success:
                 raise Exception(msg)
 
+    def insert(self, sql_statement):
+        success = True
+        msg = ''
+        con = self._db_handler.cursor()
+        try:
+            cursor = con.execute(sql_statement)
+            cursor.commit()
+        except Exception as e:
+            msg = e
+            success = False
+        finally:
+            con.close()
+            if not success:
+                raise Exception(msg)
+
+    def delete(self, sql_statement):
+        success = True
+        msg = ''
+        con = self._db_handler.cursor()
+        try:
+            cursor = con.execute(sql_statement)
+            cursor.commit()
+        except Exception as e:
+            msg = e
+            success = False
+        finally:
+            con.close()
+            if not success:
+                raise Exception(msg)
+
+    def update(self, sql_statement):
+        success = True
+        msg = ''
+        con = self._db_handler.cursor()
+        try:
+            cursor = con.execute(sql_statement)
+            cursor.commit()
+        except Exception as e:
+            msg = e
+            success = False
+        finally:
+            con.close()
+            if not success:
+                raise Exception(msg)
+
     def execute_many(self, sql_statement):
         success = True
         msg = ''
