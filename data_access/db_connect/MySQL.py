@@ -3,14 +3,14 @@ import pandas as pd
 
 
 class mysqlDB:
-    def __init__(self, config):
+    def __init__(self, config, db_con='1'):
         self._config = config
         if config['STORGE']['USING'] != 'mysql':
             raise Exception('db type error')
         host = config['STORGE']['DATABASE']['IP']
         pwd = config['STORGE']['DATABASE']['PASSWORD']
         port = config['STORGE']['DATABASE']['PORT']
-        db = config['STORGE']['DATABASE']['DB']
+        db = config['STORGE']['DATABASE'][f'DB_{db_con}']
         user = config['STORGE']['DATABASE']['USER']
         self._db_handler = pyodbc.connect(
             f'DRIVER={"MySQL ODBC 8.0 Unicode Driver"};SERVER={host};DATABASE={db};UID={user};PWD={pwd};PORT={port}')

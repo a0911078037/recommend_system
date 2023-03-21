@@ -1,5 +1,4 @@
 from flask_restx import Resource
-from utility.ErrorHandler import ErrorHandler
 from utility.RtnMessage import RtnMessage
 from data_access.db_connect.MySQL import mysqlDB
 from app import config
@@ -15,5 +14,6 @@ class test(Resource):
             print(d)
             rtn.msg = d.to_dict()
         except Exception as e:
-            rtn = ErrorHandler(e, rtn).return_error()
+            rtn.state = False
+            rtn.msg = str(e)
         return rtn.to_dict()
