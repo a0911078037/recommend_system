@@ -22,5 +22,6 @@ if __name__ == '__main__':
     app.run(
         host=config['API']['IP'],
         port=int(config['API']['PORT']),
-        debug=True
+        debug=True,
+        use_reloader=False
     )

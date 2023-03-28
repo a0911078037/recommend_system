@@ -51,3 +51,15 @@ class UserQuery:
             self._db_handler.delete(sql)
         except Exception as e:
             raise e
+
+    def get_user_id(self, acc=''):
+        try:
+            sql = \
+                f"""
+                SELECT USER_ID FROM users
+                WHERE ACCOUNT="{acc}" 
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            raise e

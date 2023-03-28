@@ -3,6 +3,7 @@ from flask import request
 from utility.RtnMessage import RtnMessage
 from app import config
 from data_access.query.user_query import UserQuery
+from data_access.query.student_query import StudentQuery
 import hashlib
 import uuid
 from utility.logger import get_logger
@@ -19,6 +20,8 @@ class User(Resource):
             acc = get_jwt_identity()
             dao = UserQuery(config)
             df = dao.get_users(acc=acc)
+            if not len(df):
+                raise Exception('account not found in db')
             rtn.result = {
                 'acc': df['ACCOUNT'][0],
                 'name': df['NAME'][0]
@@ -45,6 +48,11 @@ class User(Resource):
                              name=name,
                              pws=pws,
                              salt=salt)
+            df = dao.get_user_id(acc=acc)
+
+            dao2 = StudentQuery(config)
+            dao2.create_students(df['USER_ID'][0])
+
         except Exception as e:
             self.logger.error(repr(e))
             rtn.state = False
@@ -88,7 +96,10 @@ class User(Resource):
         try:
             acc = get_jwt_identity()
             dao = UserQuery(config)
+            df = dao.get_user_id(acc=acc)
             dao.delete_users(acc=acc)
+            dao2 = StudentQuery(config)
+            dao2.delete_student(df['USER_ID'][0])
 
         except Exception as e:
             self.logger.error(repr(e))

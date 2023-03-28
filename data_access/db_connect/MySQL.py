@@ -107,6 +107,5 @@ class mysqlDB:
             msg = e
             success = False
         finally:
-            con.close()
             if not success:
                 raise Exception(msg)
