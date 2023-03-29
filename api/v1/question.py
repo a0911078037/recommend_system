@@ -11,7 +11,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 class Question(Resource):
-    logger = get_logger('question')
+    logger = get_logger('Question')
     image_type = ['jpeg', 'bmp', 'png', 'gif', 'jpg']
 
     def allowed_file(self, filename):
@@ -64,21 +64,6 @@ class Question(Resource):
                                           category=data['category'],
                                           difficulty=data['difficulty'])
 
-            # rtn.result = {
-            #     "uid": df['uuid'].to_list(),
-            #     "question": df['question'].to_list(),
-            #     "options1": df['options1'].to_list(),
-            #     "options2": df['options2'].to_list(),
-            #     "options3": df['options3'].to_list(),
-            #     "options4": df['options4'].to_list(),
-            #     "options5": df['options5'].to_list(),
-            #     "answer": df['answer'].to_list(),
-            #     "type_id": df['type_id'].to_list(),
-            #     "difficulty": df['difficulty'].to_list(),
-            #     "image_path": df['image_path'].to_list(),
-            #     "category": df['category'].to_list(),
-            #
-            # }
             for index, row in df.iterrows():
                 rtn.result.append(
                     {

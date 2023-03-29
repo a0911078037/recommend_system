@@ -68,7 +68,7 @@ class QuestionQuery:
                 sql += \
                     f"""
                     SELECT * FROM {table}_type
-                    WHERE uuid="{type_id}"
+                    {('WHERE uuid="' + type_id + '"') if type_id else ""}
                     UNION
                     """
             sql = sql[0:-30]
@@ -83,18 +83,20 @@ class QuestionQuery:
                 f"""
                 SELECT * FROM {table_name}_questions
                 WHERE type_id="{type_id}"
-                {('AND difficulty="'+difficulty+'"') if difficulty else ""}
-                {('AND category="'+category+'"') if category else ""}
+                {('AND difficulty="' + difficulty + '"') if difficulty else ""}
+                {('AND category="' + category + '"') if category else ""}
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
         except Exception as e:
             raise e
-    def get_difficulty_type(self):
+
+    def get_difficulty_type(self, type_id=None):
         try:
             sql = \
                 f"""
                 SELECT * FROM difficulty_type
+                {('WHERE type="'+type_id+'"') if type_id else ''}
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
@@ -175,10 +177,13 @@ class QuestionQuery:
                 f"""
                 SELECT * FROM {question_type}_questions
                 {"WHERE" if difficulty or category else ''}
-                {("difficulty="+difficulty) if difficulty else ''}
-                {("category="+category) if category else ''}
+                {("difficulty=" + difficulty) if difficulty else ''}
+                {("category=" + category) if category else ''}
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
         except Exception as e:
             raise e
+
+    def get_question_type_id(self):
+        pass
