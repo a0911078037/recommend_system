@@ -8,6 +8,7 @@ import hashlib
 import uuid
 from utility.logger import get_logger
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import datetime
 
 
 class User(Resource):
@@ -73,12 +74,14 @@ class User(Resource):
                 raise Exception('input cannot be null')
             salt = uuid.uuid4().hex[0:10]
             pws = hashlib.sha256((salt + pws).encode('utf-8')).hexdigest()
+            updated_on = datetime.datetime.now()
             dao = UserQuery(config)
             dao.update_users(acc=acc,
                              name=name,
                              pws=pws,
                              salt=salt,
-                             old_acc=old_acc)
+                             old_acc=old_acc,
+                             updated_on=updated_on)
 
             rtn.msg = '更新完成，請重新登入'
 

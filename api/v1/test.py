@@ -9,10 +9,9 @@ class test(Resource):
         rtn = RtnMessage()
         try:
             db = mysqlDB(config)
-            sql = 'SELECT * FROM users'
+            sql = 'SELECT VERSION()'
             d = db.execute(sql)
-            print(d)
-            rtn.msg = d.to_dict()
+            rtn.msg = 'db connect successfully'
         except Exception as e:
             rtn.state = False
             rtn.msg = str(e)

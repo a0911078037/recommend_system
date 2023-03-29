@@ -35,12 +35,15 @@ class mysqlDB:
             if not success:
                 raise Exception(msg)
 
-    def insert(self, sql_statement):
+    def insert(self, sql_statement, data=None):
         success = True
         msg = ''
         con = self._db_handler.cursor()
         try:
-            cursor = con.execute(sql_statement)
+            if data:
+                cursor = con.execute(sql_statement, data)
+            else:
+                cursor = con.execute(sql_statement)
             cursor.commit()
         except Exception as e:
             msg = e

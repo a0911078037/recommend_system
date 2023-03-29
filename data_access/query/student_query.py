@@ -11,9 +11,10 @@ class StudentQuery:
             sql = \
                 f"""
                 INSERT INTO student_status(user_id)
-                VALUES("{user_id}")
+                VALUES(?)
                 """
-            self._db_handler.insert(sql)
+            data = (user_id)
+            self._db_handler.insert(sql, data)
 
             sql = \
                 f"""

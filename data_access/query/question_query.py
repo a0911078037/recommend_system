@@ -16,15 +16,11 @@ class QuestionQuery:
                 INSERT INTO {table_name}_questions
                 (question, options1, options2, options3, options4, options5, answer, type_id, difficulty,
                 image_path, category, uuid)
-                VALUES("{question}", "{options1}", "{options2}",
-                {options3 if options3 else "NULL"},
-                {options4 if options4 else "NULL"},
-                {options5 if options5 else "NULL"},
-                "{answer}", "{type_id}", "{difficulty}",
-                "{image_path if image_path else "NULL"}",
-                "{category}", "{uid}")
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
                 """
-            self._db_handler.insert(sql)
+            data = (question, options1, options2, options3, options4, options5, answer, type_id, int(difficulty), image_path,
+                    int(category), str(uid))
+            self._db_handler.insert(sql, data)
         except Exception as e:
             raise e
 

@@ -97,22 +97,18 @@ class Question(Resource):
                 "question": request.form['question'],
                 "options1": request.form['options1'],
                 "options2": request.form['options2'],
-                "options3": request.form.get('options3', None),
-                "options4": request.form.get('options4', None),
-                "options5": request.form.get('options5', None),
+                "options3": request.form.get('options3') or None,
+                "options4": request.form.get('options4') or None,
+                "options5": request.form.get('options5') or None,
                 "answer": request.form['answer'],
                 "type": request.form['type'],
                 "difficulty": request.form['difficulty'],
-                "image": request.files.get('image', None),
+                "image": request.files.get('image') or None,
                 "category": request.form['category']
             }
             if not data["question"] or not data["options1"] or not data["options2"] or not data["answer"] \
                     or not data["type"] or not data["difficulty"] or not data["category"]:
                 raise Exception('input missing')
-
-            if len(data["question"]) >= 200 or len(data["options1"]) >= 100 or len(data["options2"]) >= 100 \
-                    or len(data["options3"]) >= 100 or len(data["options4"]) >= 100 or len(data["options5"]) >= 100:
-                raise Exception('input length too large')
 
             dao = QuestionQuery(config)
             type_list = data['type'].split(',')

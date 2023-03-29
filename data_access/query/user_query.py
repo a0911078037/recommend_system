@@ -11,9 +11,10 @@ class UserQuery:
             sql = \
                 f"""
                 INSERT INTO users (ACCOUNT, PASSWORD, NAME, SALT)
-                VALUES("{acc}", "{pws}", "{name}", "{salt}")
+                VALUES(?, ?, ?, ?)
                 """
-            self._db_handler.insert(sql)
+            data = (acc, pws, name, salt)
+            self._db_handler.insert(sql, data)
         except Exception as e:
             raise e
 
@@ -29,12 +30,12 @@ class UserQuery:
         except Exception as e:
             raise e
 
-    def update_users(self, acc='', salt='', name='', pws='', old_acc=''):
+    def update_users(self, acc='', salt='', name='', pws='', old_acc='', updated_on=None):
         try:
             sql = \
                 f"""
                 UPDATE users 
-                SET ACCOUNT="{acc}", PASSWORD="{pws}", NAME="{name}", SALT="{salt}"
+                SET ACCOUNT="{acc}", PASSWORD="{pws}", NAME="{name}", SALT="{salt}", UPDATED_ON="{updated_on}"
                 WHERE ACCOUNT="{old_acc}"
                 """
             self._db_handler.update(sql)
