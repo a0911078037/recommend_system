@@ -140,7 +140,7 @@ class Question(Resource):
                 if len(answer_list) > 1:
                     raise Exception(f'invalid answer, expect:{"單選"}')
             else:
-                if 1 <= len(answer_list) <= 5:
+                if not 1 < len(answer_list) <= 5:
                     raise Exception(f'invalid answer, expect:{"多選"}')
             uid = uuid.uuid4()
 
@@ -233,7 +233,7 @@ class Question(Resource):
                 if len(answer_list) > 1:
                     raise Exception(f'invalid answer, expect:{"單選"}')
             else:
-                if 1 <= len(answer_list) <= 5:
+                if not 1 < len(answer_list) <= 5:
                     raise Exception(f'invalid answer, expect:{"多選"}')
 
             # image_save
