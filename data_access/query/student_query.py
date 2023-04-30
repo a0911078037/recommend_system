@@ -19,10 +19,11 @@ class StudentQuery:
             sql = \
                 f"""
                 CREATE TABLE `{user_id}_answer` (
-                `question_id` varchar(36) NOT NULL,
-                `answer_time` int NOT NULL,
-                `correct` tinyint NOT NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                `question_id` VARCHAR(36) NOT NULL,
+                `answer_time` INT NOT NULL DEFAULT 1,
+                `correct` TINYINT NOT NULL,
+                PRIMARY KEY (`question_id`),
+                UNIQUE INDEX `question_id_UNIQUE` (`question_id` ASC) VISIBLE);
                 """
             self._db_handler.insert(sql)
 
@@ -35,6 +36,16 @@ class StudentQuery:
                 `correct` tinyint NOT NULL,
                 `question_count` int NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                """
+            self._db_handler.insert(sql)
+
+            sql = \
+                f"""
+                CREATE TABLE `{user_id}_status` (
+                `paper_index` INT NOT NULL,
+                `answer_on` DATETIME NULL,
+                PRIMARY KEY (`paper_index`),
+                UNIQUE INDEX `paper_index_UNIQUE` (`paper_index` ASC) VISIBLE);
                 """
             self._db_handler.insert(sql)
 
