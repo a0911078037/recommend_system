@@ -22,8 +22,20 @@ class UserQuery:
         try:
             sql = \
                 f"""
-                SELECT PASSWORD, SALT, NAME, ACCOUNT FROM users
+                SELECT * FROM users
                 WHERE ACCOUNT="{acc}"
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            raise e
+
+    def get_user_by_id(self, user_id=''):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM users
+                WHERE USER_ID="{user_id}"
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
@@ -59,6 +71,42 @@ class UserQuery:
                 f"""
                 SELECT USER_ID FROM users
                 WHERE ACCOUNT="{acc}" 
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            raise e
+
+    def update_token(self, user_id='', token=''):
+        try:
+            sql = \
+                f"""
+                UPDATE users
+                SET token="{token}"
+                WHERE user_id="{user_id}"
+                """
+            self._db_handler.update(sql)
+        except Exception as e:
+            raise e
+
+    def delete_token(self, user_id=''):
+        try:
+            sql = \
+                f"""
+                UPDATE users
+                SET token=NULL
+                WHERE user_id="{user_id}"
+                """
+            self._db_handler.update(sql)
+        except Exception as e:
+            raise e
+
+    def get_token(self, user_id=''):
+        try:
+            sql = \
+                f"""
+                SELECT token FROM users
+                WHERE user_id="{user_id}"
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df

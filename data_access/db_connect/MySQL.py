@@ -83,13 +83,13 @@ class mysqlDB:
             if not success:
                 raise Exception(msg)
 
-    def execute_many(self, sql_statement):
+    def execute_many(self, sql_statement, data_list):
         success = True
         msg = ''
         con = self._db_handler.cursor()
         con.fast_executemany = True
         try:
-            con.execute_many(sql_statement)
+            con.executemany(sql_statement, data_list)
             con.commit()
         except Exception as e:
             msg = e

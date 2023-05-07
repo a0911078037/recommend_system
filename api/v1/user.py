@@ -7,18 +7,18 @@ from data_access.query.student_query import StudentQuery
 import hashlib
 import uuid
 from utility.logger import get_logger
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utility.auth import create_token, token_require, get_identity
 import datetime
 
 
 class User(Resource):
     logger = get_logger('user')
 
-    @jwt_required()
+    @token_require
     def get(self):
         rtn = RtnMessage()
         try:
-            acc = get_jwt_identity()
+            acc = get_identity()
             dao = UserQuery(config)
             df = dao.get_users(acc=acc)
             if not len(df):
@@ -62,14 +62,14 @@ class User(Resource):
                 rtn.msg = '帳號已經申請過了'
         return rtn.to_dict()
 
-    @jwt_required()
+    @token_require
     def put(self):
         rtn = RtnMessage()
         try:
             acc = request.json['acc']
             name = request.json['name']
             pws = request.json['pws']
-            old_acc = get_jwt_identity()
+            old_acc = get_identity()
             if not acc or not name or not pws:
                 raise Exception('input cannot be null')
             salt = uuid.uuid4().hex[0:10]
@@ -93,11 +93,11 @@ class User(Resource):
                 rtn.msg = '帳號重複'
         return rtn.to_dict()
 
-    @jwt_required()
+    @token_require
     def delete(self):
         rtn = RtnMessage()
         try:
-            acc = get_jwt_identity()
+            acc = get_identity()
             dao = UserQuery(config)
             df = dao.get_user_id(acc=acc)
             dao.delete_users(acc=acc)

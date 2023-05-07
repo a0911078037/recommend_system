@@ -18,8 +18,8 @@ class QuestionQuery:
                 image_path, category, uuid)
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
                 """
-            data = (question, options1, options2, options3, options4, options5, answer, type_id, int(difficulty), image_path,
-                    int(category), str(uid))
+            data = (question, options1, options2, options3, options4, options5, answer, type_id, int(difficulty),
+                    image_path, int(category), str(uid))
             self._db_handler.insert(sql, data)
         except Exception as e:
             raise e

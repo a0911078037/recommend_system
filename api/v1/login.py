@@ -5,7 +5,7 @@ from app import config
 from data_access.query.user_query import UserQuery
 from utility.logger import get_logger
 import hashlib
-from flask_jwt_extended import create_access_token
+from utility.auth import create_token
 
 
 class Login(Resource):
@@ -26,9 +26,15 @@ class Login(Resource):
                 raise Exception('帳號或密碼錯誤')
             pws = hashlib.sha256((df['SALT'][0] + pws).encode('utf-8')).hexdigest()
             if df['PASSWORD'][0] == pws:
+                token = create_token(is_admin=df['is_admin'][0],
+                                     is_teacher=df['is_teacher'][0],
+                                     name=df['NAME'][0],
+                                     user_id=df['USER_ID'][0])
+                dao.update_token(user_id=df['USER_ID'][0],
+                                 token=token)
                 rtn.result = {
                     'name': df['NAME'][0],
-                    'token': create_access_token(identity=df['ACCOUNT'][0])
+                    'token': token
                 }
                 rtn.msg = '登入成功'
             else:

@@ -7,7 +7,6 @@ import uuid
 from utility.logger import get_logger
 import os
 import datetime
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 class Question(Resource):

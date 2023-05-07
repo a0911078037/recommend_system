@@ -33,8 +33,8 @@ class StudentQuery:
                 `paper_index` int NOT NULL,
                 `question_id` varchar(36) NOT NULL,
                 `answer` varchar(10) NOT NULL,
-                `correct` tinyint NOT NULL,
-                `question_count` int NOT NULL
+                `student_answer` varchar(10) NOT NULL,
+                `correct` tinyint NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
                 """
             self._db_handler.insert(sql)
@@ -43,7 +43,10 @@ class StudentQuery:
                 f"""
                 CREATE TABLE `{user_id}_status` (
                 `paper_index` INT NOT NULL,
-                `answer_on` DATETIME NULL,
+                `paper_id` VARCHAR(45) NOT NULL,
+                `created_on` DATETIME NOT NULL,
+                `answered_right` INT NOT NULL,
+                `total_question` INT NOT NULL
                 PRIMARY KEY (`paper_index`),
                 UNIQUE INDEX `paper_index_UNIQUE` (`paper_index` ASC) VISIBLE);
                 """
