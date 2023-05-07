@@ -19,7 +19,8 @@ def create_token_by_refresh(refresh_token=None):
                              is_teacher=df['is_teacher'][0],
                              name=df['NAME'][0],
                              user_id=data['_id'],
-                             refresh_time=refresh_time + 1
+                             refresh_time=refresh_time + 1,
+                             refresh_exp=data['exp']
                              )
     dao.update_token(user_id=data['_id'],
                      token=new_token)
@@ -36,9 +37,9 @@ def get_identity():
     return data['name'], data['_id'], data['is_admin'], data['is_teacher']
 
 
-def create_refresh_token(user_id=None, refresh_time=0):
+def create_refresh_token(user_id=None, refresh_time=0, refresh_exp=None):
     time_now = datetime.datetime.now()
-    time_exp = time_now + datetime.timedelta(hours=int(config['API']['TOKEN_EXPIRE']))
+    time_exp = time_now + datetime.timedelta(hours=int(config['API']['REFRESH_TOKEN']))
     # convert into timestamp
     time_now = datetime.datetime.timestamp(time_now)
     time_exp = datetime.datetime.timestamp(time_exp)
@@ -49,7 +50,7 @@ def create_refresh_token(user_id=None, refresh_time=0):
 
     payload = {
         "refresh_token": refresh_time,
-        "exp": time_exp,
+        "exp": time_exp if not refresh_exp else refresh_exp,
         "iat": time_now,
         "_id": user_id
     }
@@ -61,7 +62,7 @@ def create_refresh_token(user_id=None, refresh_time=0):
     return token
 
 
-def create_token(is_admin=False, is_teacher=False, name=None, user_id=None, refresh_time=0):
+def create_token(is_admin=False, is_teacher=False, name=None, user_id=None, refresh_time=0, refresh_exp=None):
     time_now = datetime.datetime.now()
     time_exp = time_now + datetime.timedelta(minutes=int(config['API']['TOKEN_EXPIRE']))
     # convert into timestamp
@@ -79,7 +80,7 @@ def create_token(is_admin=False, is_teacher=False, name=None, user_id=None, refr
         "iat": time_now,
         "is_admin": bool(is_admin),
         "is_teacher": bool(is_teacher),
-        "refresh_token": create_refresh_token(user_id=user_id, refresh_time=refresh_time)
+        "refresh_token": create_refresh_token(user_id=user_id, refresh_time=refresh_time, refresh_exp=refresh_exp)
     }
     token = jwt.encode(
         headers=headers,
