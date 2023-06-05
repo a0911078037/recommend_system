@@ -20,10 +20,12 @@ class TestQuery:
         except Exception as e:
             raise e
 
-    def get_question(self, question_name_list=None, student_id=None, pick_num=None):
+    def get_random_question_with_limit_list_each_table(self, question_name_list=None, student_id=None,
+                                                       pick_num_list=None):
+        # limit each question table then union
         try:
             data_frame = pd.DataFrame()
-            for question_type in question_name_list:
+            for question_type, pick_num in zip(question_name_list, pick_num_list):
                 sql = \
                     f"""
                     SELECT t1.uuid, t1.question, t1.options1, t1.options2, t1.options3, t1.options4, t1.options5, 
@@ -36,6 +38,34 @@ class TestQuery:
                 df = self._db_handler_question.execute_dataframe(sql)
                 data_frame = data_frame.append(df, ignore_index=True)
             return data_frame
+        except Exception as e:
+            raise e
+
+    def get_random_question_with_limit(self, question_name_list=None, student_id=None, pick_num=None):
+        # union all question table then limit
+        try:
+            sql = \
+                f"""
+                SELECT v1.uuid, v1.question, v1.options1, v1.options2, v1.options3, v1.options4, v1.options5, 
+                v1.answer, v1.type_id, v1.category FROM(
+                """
+            for i, question_type in enumerate(question_name_list):
+                sql += \
+                    f"""
+                    SELECT * FROM recommend_system.{question_type}_questions AS t{i} UNION
+                    """
+            sql = sql[:-27]
+            sql += \
+                f"""
+                ) as v1 LEFT JOIN
+                student_base.`{student_id}_answer` AS v2 ON 
+                v1.uuid=v2.question_id AND
+                v2.correct = 1
+                WHERE v2.question_id IS NULL
+                LIMIT {pick_num};
+                """
+            df = self._db_handler_question.execute_dataframe(sql)
+            return df
         except Exception as e:
             raise e
 
@@ -87,15 +117,16 @@ class TestQuery:
             raise e
 
     def insert_student_paper_status(self, student_id=None, paper_index=None, paper_id=None, answered_right=None,
-                                    total_question=None, created_on=None):
+                                    total_question=None, created_on=None, score=None, paper_type=None,
+                                    total_score=None):
         try:
             sql = \
                 f"""
                 INSERT INTO `{student_id}_status`
-                (paper_index, paper_id, answered_right, total_question, created_on)
-                VALUES(?,?,?,?,?)
+                (paper_index, paper_id, answered_right, total_question, created_on, score, paper_type, total_score)
+                VALUES(?,?,?,?,?,?,?,?)
                 """
-            data = (paper_index, paper_id, answered_right, total_question, created_on)
+            data = (paper_index, paper_id, answered_right, total_question, created_on, score, paper_type, total_score)
             self._db_handler_student.insert(sql, data)
         except Exception as e:
             raise e
@@ -117,10 +148,10 @@ class TestQuery:
     def update_student_status(self, student_id=None, counter_list=None, question_name_list=None):
         try:
             sql = \
-            f"""
-            UPDATE `student_status`
-            SET 
-            """
+                f"""
+                UPDATE `student_status`
+                SET 
+                """
             for question_name in question_name_list:
                 sql += f"correct_{question_name} = correct_{question_name} + {counter_list[f'correct_{question_name}']}, " \
                        f"answer_{question_name} = answer_{question_name} + {counter_list[f'{question_name}']}, "
@@ -128,5 +159,29 @@ class TestQuery:
             sql = sql[0:-2]
             sql += f" WHERE student_id = '{student_id}'"
             self._db_handler_student.update(sql)
+        except Exception as e:
+            raise e
+
+    def get_paper_by_paper_type(self, student_id=None, paper_type=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `{student_id}_status`
+                WHERE paper_type = '{paper_type}'
+                """
+            df = self._db_handler_student.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            raise e
+
+    def get_paper_by_paper_index(self, student_id=None, paper_index=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `{student_id}_status`
+                WHERE paper_index = {paper_index}
+                """
+            df = self._db_handler_student.execute_dataframe(sql)
+            return df
         except Exception as e:
             raise e

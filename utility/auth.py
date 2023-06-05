@@ -93,16 +93,21 @@ def create_token(is_admin=False, is_teacher=False, name=None, user_id=None, refr
 def token_require(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        auth = request.headers['Authorization'].split(' ')
-        if auth[0] != 'Bearer':
-            abort(400)
-        data = jwt.decode(
-            auth[1], key=config['API']['SECRETKEY'], algorithms='HS256'
-        )
-        dao = UserQuery(config)
-        df = dao.get_token(user_id=data['_id'])
-        if df['token'][0] != auth[1]:
-            return jsonify({'msg': 'token invalid, please re login'})
-        return f(*args, **kwargs)
+        try:
+            auth = request.headers['Authorization'].split(' ')
+            if auth[0] != 'Bearer':
+                abort(400)
+            data = jwt.decode(
+                auth[1], key=config['API']['SECRETKEY'], algorithms='HS256'
+            )
+            dao = UserQuery(config)
+            df = dao.get_token(user_id=data['_id'])
+            if df['token'][0] != auth[1]:
+                return jsonify({'msg': 'token invalid, please re login', 'status': False})
+            return f(*args, **kwargs)
+        except Exception as e:
+            print(e)
+            if 'Signature has expired' in e.args[0]:
+                return jsonify({'msg': 'token has expired', 'status': False})
 
     return wrapper

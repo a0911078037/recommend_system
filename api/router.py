@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from .v1.test import Test
+from .v1.first_test import FirstTest
 from .v1.user import User
 from .v1.login import Login
 from .v1.question import Question
@@ -13,7 +13,7 @@ from .v1.refresh_token import RefreshToken
 
 
 router = [
-    dict(resource=Test, urls=['/test'], endpoint='test'),
+    dict(resource=FirstTest, urls=['/first_test'], endpoint='first_test'),
     dict(resource=User, urls=['/user'], endpoint='user'),
     dict(resource=Login, urls=['/login'], endpoint='login'),
     dict(resource=Question, urls=['/question'], endpoint='question'),

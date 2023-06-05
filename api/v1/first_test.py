@@ -11,8 +11,8 @@ import os
 import datetime
 
 
-class Test(Resource):
-    logger = get_logger('Test')
+class FirstTest(Resource):
+    logger = get_logger('FirstTest')
 
     @token_require
     def get(self):
@@ -34,23 +34,34 @@ class Test(Resource):
             dao = TestQuery(config)
             question_name_list = dao.get_question_type()['type_name'].to_list()
             # random pick question
-            pick_num = int(config['API']['QUESTION_NUM']) // len(question_name_list)
-            question = dao.get_question(question_name_list=question_name_list,
-                                        student_id=student_id,
-                                        pick_num=pick_num)
+            pick_num_list = [int(config['API']['QUESTION_NUM']) // len(question_name_list)] * len(question_name_list)
+            for i in range(0, int(config['API']['QUESTION_NUM']) % len(question_name_list)):
+                pick_num_list[i] += 1
+            question = dao.get_random_question_with_limit_list_each_table(question_name_list=question_name_list,
+                                                                          student_id=student_id,
+                                                                          pick_num_list=pick_num_list)
+
+            df = dao.get_paper_by_paper_index(student_id=student_id,
+                                              paper_index=0)
+            if not df.empty:
+                raise Exception('first_test already done')
             paper_index = dao.get_new_paperIndex(student_id=student_id)
             paper_id = str(uuid.uuid4())
-            time_now = str(datetime.datetime.now())
-            pass_num = int(len(question['answer']) * 0.6)
+            time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            question_score_list = [100 // len(question['answer'])] * len(question['answer'])
+            total_score = 100
             file = {
                 "student_id": student_id,
                 "paper_id": paper_id,
                 "paper_index": paper_index,
+                "paper_type": "first_test",
                 "created_on": time_now,
+                "limit_time": config['API']['DEFAULT_TEST_TIME'],
                 "answer_list": question['answer'].to_list(),
                 "question_id_list": question['uuid'].to_list(),
                 "type_id_list": question['type_id'].to_list(),
-                "pass_num": pass_num
+                "question_score_list": question_score_list,
+                "total_score": total_score
             }
             file_json = json.dumps(file)
             if os.path.exists(f'./test_tmp/{paper_id}.json'):
@@ -62,7 +73,9 @@ class Test(Resource):
                 "paper_id": paper_id,
                 "paper_index": paper_index,
                 "created_on": time_now,
-                "pass_num": pass_num,
+                "question_score_list": question_score_list,
+                "limit_time": config['API']['DEFAULT_TEST_TIME'],
+                "total_score": total_score,
                 "question_list":
                     question.to_dict(orient='records')
             }

@@ -20,7 +20,7 @@ class StudentQuery:
                 f"""
                 CREATE TABLE `{user_id}_answer` (
                 `question_id` VARCHAR(36) NOT NULL,
-                `answer_time` INT NOT NULL DEFAULT 1,
+                `answer_time` INT NOT NULL DEFAULT 0,
                 `correct` TINYINT NOT NULL,
                 PRIMARY KEY (`question_id`),
                 UNIQUE INDEX `question_id_UNIQUE` (`question_id` ASC) VISIBLE);
@@ -44,9 +44,11 @@ class StudentQuery:
                 CREATE TABLE `{user_id}_status` (
                 `paper_index` INT NOT NULL,
                 `paper_id` VARCHAR(45) NOT NULL,
+                `paper_type` varchar(45) NOT NULL,
                 `created_on` DATETIME NOT NULL,
                 `answered_right` INT NOT NULL,
-                `total_question` INT NOT NULL
+                `total_question` INT NOT NULL,
+                `score` smallint NOT NULL
                 PRIMARY KEY (`paper_index`),
                 UNIQUE INDEX `paper_index_UNIQUE` (`paper_index` ASC) VISIBLE);
                 """
