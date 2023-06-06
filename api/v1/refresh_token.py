@@ -10,16 +10,20 @@ class RefreshToken(Resource):
 
     def post(self):
         rtn = RtnMessage()
+        data = None
         try:
-            refresh_token = request.json['refresh_token']
-            new_token = create_token_by_refresh(refresh_token=refresh_token)
+            data = {
+                "refresh_token": request.json.get('refresh_token', None)
+            }
+            new_token = create_token_by_refresh(refresh_token=data["refresh_token"])
             rtn.result.append(
                 {
                     "token": new_token
                 }
             )
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 

@@ -28,7 +28,10 @@ def create_token_by_refresh(refresh_token=None):
 
 
 def get_identity():
-    auth = request.headers['Authorization'].split(' ')
+    auth = request.headers['Authorization']
+    if not auth:
+        abort(400)
+    auth = auth.split(' ')
     if auth[0] != 'Bearer':
         abort(400)
     data = jwt.decode(
@@ -94,7 +97,10 @@ def token_require(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
-            auth = request.headers['Authorization'].split(' ')
+            auth = request.headers['Authorization']
+            if not auth:
+                abort(400)
+            auth = auth.split(' ')
             if auth[0] != 'Bearer':
                 abort(400)
             data = jwt.decode(
@@ -102,7 +108,7 @@ def token_require(f):
             )
             dao = UserQuery(config)
             df = dao.get_token(user_id=data['_id'])
-            if df['token'][0] != auth[1]:
+            if df.empty or df['token'][0] != auth[1]:
                 return jsonify({'msg': 'token invalid, please re login', 'status': False})
             return f(*args, **kwargs)
         except Exception as e:

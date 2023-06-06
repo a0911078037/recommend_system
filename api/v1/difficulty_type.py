@@ -11,6 +11,7 @@ class DifficultyType(Resource):
 
     def get(self):
         rtn = RtnMessage()
+        data = None
         try:
             data = {
                 "type_id": request.args.get('type_id', None)
@@ -22,7 +23,8 @@ class DifficultyType(Resource):
             )
 
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 

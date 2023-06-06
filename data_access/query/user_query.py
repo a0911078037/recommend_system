@@ -1,10 +1,12 @@
 from data_access.db_connect.MySQL import mysqlDB
+from utility.logger import get_logger
 
 
 class UserQuery:
     def __init__(self, config):
         self._config = config
         self._db_handler = mysqlDB(config, 1)
+        self.logger = get_logger('UserQuery')
 
     def create_users(self, acc='', salt='', name='', pws=''):
         try:
@@ -16,7 +18,9 @@ class UserQuery:
             data = (acc, pws, name, salt)
             self._db_handler.insert(sql, data)
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: acc:{acc}, salt:{salt}, name:{name}, pws:{pws}")
+            raise Exception('error in query')
 
     def get_users(self, acc=''):
         try:
@@ -28,7 +32,9 @@ class UserQuery:
             df = self._db_handler.execute_dataframe(sql)
             return df
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: acc:{acc}")
+            raise Exception('error in query')
 
     def get_user_by_id(self, user_id=''):
         try:
@@ -40,30 +46,37 @@ class UserQuery:
             df = self._db_handler.execute_dataframe(sql)
             return df
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: user_id:{user_id}")
+            raise Exception('error in query')
 
-    def update_users(self, acc='', salt='', name='', pws='', old_acc='', updated_on=None):
+    def update_users(self, acc='', salt='', name='', pws='', _id='', updated_on=None):
         try:
             sql = \
                 f"""
                 UPDATE users 
                 SET ACCOUNT="{acc}", PASSWORD="{pws}", NAME="{name}", SALT="{salt}", UPDATED_ON="{updated_on}"
-                WHERE ACCOUNT="{old_acc}"
+                WHERE USER_ID="{_id}"
                 """
             self._db_handler.update(sql)
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: acc:{acc}, salt:{salt}, name:{name}, pws:{pws}, _id:{_id}, "
+                              f"updated_on:{updated_on}")
+            raise Exception('error in query')
 
-    def delete_users(self, acc=''):
+    def delete_users(self, _id=''):
         try:
             sql = \
                 f"""
                 DELETE FROM users
-                WHERE ACCOUNT="{acc}"
+                WHERE USER_ID="{_id}"
                 """
             self._db_handler.delete(sql)
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: _id:{_id}")
+            raise Exception('error in query')
 
     def get_user_id(self, acc=''):
         try:
@@ -75,7 +88,9 @@ class UserQuery:
             df = self._db_handler.execute_dataframe(sql)
             return df
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: acc:{acc}")
+            raise Exception('error in query')
 
     def update_token(self, user_id='', token=''):
         try:
@@ -87,7 +102,9 @@ class UserQuery:
                 """
             self._db_handler.update(sql)
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: token:{token}, user_id:{user_id}")
+            raise Exception('error in query')
 
     def delete_token(self, user_id=''):
         try:
@@ -99,16 +116,20 @@ class UserQuery:
                 """
             self._db_handler.update(sql)
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: user_id:{user_id}")
+            raise Exception('error in query')
 
     def get_token(self, user_id=''):
         try:
             sql = \
                 f"""
                 SELECT token FROM users
-                WHERE user_id="{user_id}"
+                WHERE USER_ID="{user_id}"
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: user_id:{user_id}")
+            raise Exception('error in query')

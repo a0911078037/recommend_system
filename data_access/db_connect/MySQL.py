@@ -1,10 +1,12 @@
 import pyodbc
 import pandas as pd
+from utility.logger import get_logger
 
 
 class mysqlDB:
     def __init__(self, config, db_con='1'):
         self._config = config
+        self.logger = get_logger('mysqlDB')
         if config['STORGE']['USING'] != 'mysql':
             raise Exception('db type error')
         host = config['STORGE']['DATABASE']['IP']
@@ -28,7 +30,9 @@ class mysqlDB:
             result = cursor.fetchall()
             return result
         except Exception as e:
-            msg = e
+            self.logger.error(e)
+            self.logger.error(f"SQL:{sql_statement}")
+            msg = 'error in db'
             success = False
         finally:
             con.close()
@@ -46,7 +50,9 @@ class mysqlDB:
                 cursor = con.execute(sql_statement)
             cursor.commit()
         except Exception as e:
-            msg = e
+            self.logger.error(e)
+            self.logger.error(f"SQL:{sql_statement}")
+            msg = 'error in db'
             success = False
         finally:
             con.close()
@@ -61,7 +67,9 @@ class mysqlDB:
             cursor = con.execute(sql_statement)
             cursor.commit()
         except Exception as e:
-            msg = e
+            self.logger.error(e)
+            self.logger.error(f"SQL:{sql_statement}")
+            msg = 'error in db'
             success = False
         finally:
             con.close()
@@ -76,7 +84,9 @@ class mysqlDB:
             cursor = con.execute(sql_statement)
             cursor.commit()
         except Exception as e:
-            msg = e
+            self.logger.error(e)
+            self.logger.error(f"SQL:{sql_statement}")
+            msg = 'error in db'
             success = False
         finally:
             con.close()
@@ -92,7 +102,9 @@ class mysqlDB:
             con.executemany(sql_statement, data_list)
             con.commit()
         except Exception as e:
-            msg = e
+            self.logger.error(e)
+            self.logger.error(f"SQL:{sql_statement}")
+            msg = 'error in db'
             success = False
         finally:
             con.close()
@@ -107,7 +119,9 @@ class mysqlDB:
             result = pd.read_sql(sql_statement, con)
             return result
         except Exception as e:
-            msg = e
+            self.logger.error(e)
+            self.logger.error(f"SQL:{sql_statement}")
+            msg = 'error in db'
             success = False
         finally:
             if not success:

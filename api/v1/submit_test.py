@@ -28,15 +28,17 @@ class SubmitTest(Resource):
     @token_require
     def post(self):
         rtn = RtnMessage()
+        student_name, student_id, is_admin, is_teacher = get_identity()
+        data = None
         try:
-            student_name, student_id, is_admin, is_teacher = get_identity()
+            data = {
+                "paper_id": request.json.get('paper_id', None),
+                "answer_list": request.json.get("answer_list", None)
+            }
 
-            paper_id = request.json['paper_id']
-            student_answer_list = request.json['answer_list']
-
-            if not paper_id:
+            if not data["paper_id"] or not data["answer_list"]:
                 raise Exception('input data missing')
-            paper_file_path = f'./test_tmp/{paper_id}.json'
+            paper_file_path = f'./test_tmp/{data["paper_id"]}.json'
 
             if not os.path.exists(paper_file_path):
                 raise Exception('paper not found! please get a new test and try again')
@@ -53,17 +55,20 @@ class SubmitTest(Resource):
                 raise Exception('examination time is over!')
 
             if paper['paper_type'] == 'first_test':
-                first_test(student_answer_list=student_answer_list,
+                first_test(student_answer_list=data["answer_list"],
                            paper=paper,
                            student_id=student_id,
-                           paper_id=paper_id)
+                           paper_id=data["paper_id"])
             else:
                 raise Exception('paper_type invalid')
 
             file.close()
 
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
+            self.logger.error(f"REQUEST IDENTITY: name:{student_name}, _id{student_id}, is_admin:{is_admin}, "
+                              f"is_teacher:{is_teacher}")
             rtn.state = False
             rtn.msg = str(e)
         return rtn.to_dict()

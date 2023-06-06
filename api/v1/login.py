@@ -10,21 +10,25 @@ from utility.auth import create_token
 
 class Login(Resource):
     logger = get_logger('login')
+    data = None
 
     def post(self):
         rtn = RtnMessage()
+        data = None
         try:
-            acc = request.json['acc']
-            pws = request.json['pws']
-            if not acc or not pws:
+            data = {
+                "acc": request.json.get('acc', None),
+                "pws": request.json.get('pws', None)
+            }
+            if not data['acc'] or not data['pws']:
                 raise Exception('input cannot be null')
-            if len(acc) >= 64 or len(pws) >= 64:
+            if len(data['acc']) >= 64 or len(data['pws']) >= 64:
                 raise Exception('length is too long')
             dao = UserQuery(config)
-            df = dao.get_users(acc=acc)
+            df = dao.get_users(acc=data['acc'])
             if not len(df):
                 raise Exception('帳號或密碼錯誤')
-            pws = hashlib.sha256((df['SALT'][0] + pws).encode('utf-8')).hexdigest()
+            pws = hashlib.sha256((df['SALT'][0] + data['pws']).encode('utf-8')).hexdigest()
             if df['PASSWORD'][0] == pws:
                 token = create_token(is_admin=df['is_admin'][0],
                                      is_teacher=df['is_teacher'][0],
@@ -40,7 +44,8 @@ class Login(Resource):
             else:
                 raise Exception('帳號或密碼錯誤')
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 

@@ -1,16 +1,18 @@
 from data_access.db_connect.MySQL import mysqlDB
+from utility.logger import get_logger
 
 
 class StudentQuery:
     def __init__(self, config):
         self._config = config
         self._db_handler = mysqlDB(config, 2)
+        self.logger = get_logger('StudentQuery')
 
     def create_students(self, user_id=''):
         try:
             sql = \
                 f"""
-                INSERT INTO student_status(user_id)
+                INSERT INTO student_status(student_id)
                 VALUES(?)
                 """
             data = (user_id)
@@ -48,21 +50,23 @@ class StudentQuery:
                 `created_on` DATETIME NOT NULL,
                 `answered_right` INT NOT NULL,
                 `total_question` INT NOT NULL,
-                `score` smallint NOT NULL
+                `score` smallint NOT NULL,
                 PRIMARY KEY (`paper_index`),
                 UNIQUE INDEX `paper_index_UNIQUE` (`paper_index` ASC) VISIBLE);
                 """
             self._db_handler.insert(sql)
 
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: user_id: {user_id}")
+            raise Exception('error in query')
 
     def delete_student(self, user_id=''):
         try:
             sql = \
                 f"""
                 DELETE FROM student_status
-                WHERE user_id = "{user_id}"
+                WHERE student_id = "{user_id}"
                 """
             self._db_handler.delete(sql)
 
@@ -77,5 +81,13 @@ class StudentQuery:
                 DROP TABLE `{user_id}_paper`
                 """
             self._db_handler.delete(sql)
+
+            sql = \
+                f"""
+                DROP TABLE `{user_id}_status`
+                """
+            self._db_handler.delete(sql)
         except Exception as e:
-            raise e
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: user_id: {user_id}")
+            raise Exception('error in query')

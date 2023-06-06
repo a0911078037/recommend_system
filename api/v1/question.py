@@ -19,6 +19,7 @@ class Question(Resource):
 
     def get(self):
         rtn = RtnMessage()
+        data = None
         try:
             data = {
                 "question_type_id": request.args.get('question_type_id', None),
@@ -83,7 +84,8 @@ class Question(Resource):
                     }
                 )
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 
@@ -91,6 +93,7 @@ class Question(Resource):
 
     def post(self):
         rtn = RtnMessage()
+        data = None
         try:
             data = {
                 "question": request.form['question'],
@@ -113,7 +116,7 @@ class Question(Resource):
             type_list = data['type'].split(',')
             df = dao.get_question_type()
             type_id = \
-                dao.get_question_class_id(class_type=df['type_name'].to_list(), type_list=type_list)['uuid'].values[0]
+                dao.get_question_class_id(class_type=df['type_name'].to_list(), type_list=type_list)['type_id'].values[0]
             if not len(df):
                 raise Exception('type cannot found in db')
 
@@ -167,8 +170,11 @@ class Question(Resource):
                 table_name=type_list[0]
             )
 
+            dao.update_question_type_question_count(question_type=type_list[0], type_id=type_id)
+
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 
@@ -176,6 +182,7 @@ class Question(Resource):
 
     def put(self):
         rtn = RtnMessage()
+        data = None
         try:
             data = {
                 "question": request.form['question'],
@@ -227,7 +234,6 @@ class Question(Resource):
                 if len(answer) > 1 or not answer.isdigit() or int(answer) > 5:
                     raise Exception('answer format error')
 
-
             if (df.loc[df['category'] == '單選']['type'].astype(str).values == data['category']).any():
                 if len(answer_list) > 1:
                     raise Exception(f'invalid answer, expect:{"單選"}')
@@ -265,7 +271,8 @@ class Question(Resource):
             )
 
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 
@@ -273,6 +280,7 @@ class Question(Resource):
 
     def delete(self):
         rtn = RtnMessage()
+        data = None
         try:
             data = {
                 "uid": request.json['uid'],
@@ -285,14 +293,18 @@ class Question(Resource):
             if not (df['type'].values == data['question_type_id']).any():
                 raise Exception('invalid type id')
             type_name = df[df['type'] == data['question_type_id']]['type_name'].to_list()[0].lower()
+            type_id = dao.get_question_by_uid(uid=data['uid'], table=type_name)['type_id'].values[0]
             dao.delete_question_by_uid(uid=data['uid'], table_name=type_name)
+
+            dao.delete_question_type_question_count(question_type=type_name, type_id=type_id)
 
             for i in self.image_type:
                 path = f'./question_image/{data["uid"]}.{i}'
                 if os.path.exists(path):
                     os.remove(path)
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
 

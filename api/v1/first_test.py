@@ -28,9 +28,8 @@ class FirstTest(Resource):
     @token_require
     def post(self):
         rtn = RtnMessage()
+        student_name, student_id, is_admin, is_teacher = get_identity()
         try:
-            student_name, student_id, is_admin, is_teacher = get_identity()
-
             dao = TestQuery(config)
             question_name_list = dao.get_question_type()['type_name'].to_list()
             # random pick question
@@ -81,7 +80,10 @@ class FirstTest(Resource):
             }
 
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: NONE")
+            self.logger.error(f"REQUEST IDENTITY: name:{student_name}, _id{student_id}, is_admin:{is_admin}, "
+                              f"is_teacher:{is_teacher}")
             rtn.state = False
             rtn.msg = str(e)
         return rtn.to_dict()

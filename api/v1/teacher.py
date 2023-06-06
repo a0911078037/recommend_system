@@ -16,20 +16,24 @@ class Teacher(Resource):
 
     def get(self):
         rtn = RtnMessage()
+        data = None
         try:
             pass
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
         return rtn.to_dict()
 
     def post(self):
         rtn = RtnMessage()
+        data = None
         try:
             pass
         except Exception as e:
-            self.logger.error(repr(e))
+            self.logger.error(e, exc_info=True)
+            self.logger.error(f"REQUEST PARAM: {data}")
             rtn.state = False
             rtn.msg = str(e)
         return rtn.to_dict()
