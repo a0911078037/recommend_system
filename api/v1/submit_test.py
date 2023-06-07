@@ -33,12 +33,17 @@ class SubmitTest(Resource):
         try:
             data = {
                 "paper_id": request.json.get('paper_id', None),
-                "answer_list": request.json.get("answer_list", None)
+                "answer_list": request.json.get("answer_list", None),
+                "paper_type": request.json.get("paper_type", None)
             }
 
-            if not data["paper_id"] or not data["answer_list"]:
+            if not data["paper_id"] or not data["answer_list"] or not data['paper_type']:
                 raise Exception('input data missing')
-            paper_file_path = f'./test_tmp/{data["paper_id"]}.json'
+            paper_file_path = None
+            if data['paper_type'] == 'first_test':
+                paper_file_path = f'./test_tmp/first_test/{data["paper_id"]}.json'
+            else:
+                raise Exception('invalid paper_type')
 
             if not os.path.exists(paper_file_path):
                 raise Exception('paper not found! please get a new test and try again')
@@ -58,7 +63,8 @@ class SubmitTest(Resource):
                 first_test(student_answer_list=data["answer_list"],
                            paper=paper,
                            student_id=student_id,
-                           paper_id=data["paper_id"])
+                           paper_id=data["paper_id"],
+                           current_time=str(current_time))
             else:
                 raise Exception('paper_type invalid')
 
@@ -74,7 +80,7 @@ class SubmitTest(Resource):
         return rtn.to_dict()
 
 
-def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=None):
+def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=None, current_time=None):
     dao = TestQuery(config)
 
     if paper['student_id'] != student_id:
@@ -95,12 +101,22 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
     df = dao.get_question_type_id(question_name_list=question_name_list)
     score = 0
     cnt = Counter()
+    type_cnt = Counter()
+    type_dict = {}
     for type_id, correct, question_score in zip(paper['type_id_list'], correct_list, question_score_list):
-        question_name = df.loc[df['uuid'] == type_id]['type1'].values[0]
-        cnt[question_name] += 1
+        # 計算大方向的類別
+        question = df.loc[df['type_id'] == type_id].values[0].tolist()[0:-1]
+        question = [i for i in question if i is not None]
+        cnt[f"{question[1]}"] += 1
+
+        # 計算小方向的類別
+        type_name = ','.join(question[1:])
+        type_cnt[f"{type_name}"] += 1
+        type_dict[type_name] = question[0]
         if correct:
             score += question_score
-            cnt[f"correct_{question_name}"] += 1
+            cnt[f"correct_{question[1]}"] += 1
+            type_cnt[f"correct_{type_name}"] += 1
 
     dao.insert_student_paper(student_id=student_id,
                              student_answer_list=student_answer_list,
@@ -122,9 +138,14 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
         created_on=paper['created_on'],
         total_score=paper['total_score'],
         score=score,
-        paper_type=paper['paper_type']
+        paper_type=paper['paper_type'],
+        answered_on=current_time
     )
 
     dao.update_student_status(student_id=student_id,
                               question_name_list=question_name_list,
                               counter_list=cnt)
+
+    dao.update_student_type(type_cnt=type_cnt,
+                            type_dict=type_dict,
+                            student_id=student_id)

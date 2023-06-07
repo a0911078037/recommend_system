@@ -47,12 +47,26 @@ class StudentQuery:
                 `paper_index` INT NOT NULL,
                 `paper_id` VARCHAR(45) NOT NULL,
                 `paper_type` varchar(45) NOT NULL,
-                `created_on` DATETIME NOT NULL,
                 `answered_right` INT NOT NULL,
                 `total_question` INT NOT NULL,
                 `score` smallint NOT NULL,
+                `total_score` smallint NOT NULL,
+                `created_on` DATETIME NOT NULL,
+                `answered_on` DATETIME NOT NULL,
                 PRIMARY KEY (`paper_index`),
                 UNIQUE INDEX `paper_index_UNIQUE` (`paper_index` ASC) VISIBLE);
+                """
+            self._db_handler.insert(sql)
+
+            sql = \
+                f"""
+                CREATE TABLE `{user_id}_type` (
+                `type_id` VARCHAR(36) NOT NULL,
+                `type_name` VARCHAR(45) NOT NULL,
+                `type_correct` INT NOT NULL DEFAULT 0,
+                `type_answer` INT NOT NULL DEFAULT 0,
+                PRIMARY KEY (`type_id`),
+                UNIQUE KEY `type_id_UNIQUE` (`type_id`));
                 """
             self._db_handler.insert(sql)
 
@@ -85,6 +99,12 @@ class StudentQuery:
             sql = \
                 f"""
                 DROP TABLE `{user_id}_status`
+                """
+            self._db_handler.delete(sql)
+
+            sql = \
+                f"""
+                DROP TABLE `{user_id}_type`
                 """
             self._db_handler.delete(sql)
         except Exception as e:

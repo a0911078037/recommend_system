@@ -10,6 +10,7 @@ from .v1.submit_test import SubmitTest
 from .v1.teacher import Teacher
 from .v1.logout import Logout
 from .v1.refresh_token import RefreshToken
+from .v1.content_based_test import ContentBasedTest
 
 
 router = [
@@ -22,6 +23,7 @@ router = [
     dict(resource=Teacher, urls=['/teacher'], endpoint='teacher'),
     dict(resource=Logout, urls=['/logout'], endpoint='logout'),
     dict(resource=RefreshToken, urls=['/refresh_token'], endpoint='refresh_token'),
+    dict(resource=ContentBasedTest, urls=['/content_based_test'], endpoint='ContentBasedTest'),
     dict(resource=DifficultyType, urls=['/difficulty_type'], endpoint='difficulty_type')
 ]
 
