@@ -3,6 +3,7 @@ from flask import request
 from utility.RtnMessage import RtnMessage
 from app import config
 from data_access.query.test_query import TestQuery
+from data_access.query.question_query import QuestionQuery
 from utility.logger import get_logger
 import os
 import json
@@ -42,6 +43,8 @@ class SubmitTest(Resource):
             paper_file_path = None
             if data['paper_type'] == 'first_test':
                 paper_file_path = f'./test_tmp/first_test/{data["paper_id"]}.json'
+            elif data['paper_type'] == 'content_based':
+                paper_file_path = f'./test_tmp/content_based/{data["paper_id"]}.json'
             else:
                 raise Exception('invalid paper_type')
 
@@ -59,14 +62,14 @@ class SubmitTest(Resource):
             if created_on + datetime.timedelta(minutes=int(limit_time)) + tolerance_time < current_time:
                 raise Exception('examination time is over!')
 
-            if paper['paper_type'] == 'first_test':
-                first_test(student_answer_list=data["answer_list"],
-                           paper=paper,
-                           student_id=student_id,
-                           paper_id=data["paper_id"],
-                           current_time=str(current_time))
-            else:
-                raise Exception('paper_type invalid')
+            if paper['paper_type'] != data['paper_type']:
+                raise Exception('paper_type not match with db')
+
+            submit_test(student_answer_list=data["answer_list"],
+                        paper=paper,
+                        student_id=student_id,
+                        paper_id=data["paper_id"],
+                        current_time=str(current_time))
 
             file.close()
 
@@ -80,7 +83,7 @@ class SubmitTest(Resource):
         return rtn.to_dict()
 
 
-def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=None, current_time=None):
+def submit_test(student_answer_list=None, paper=None, student_id=None, paper_id=None, current_time=None):
     dao = TestQuery(config)
 
     if paper['student_id'] != student_id:
@@ -89,8 +92,8 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
     if paper['paper_id'] != paper_id:
         raise Exception('paper id not match!')
 
-    df = dao.get_paper_by_paper_index(student_id=student_id,
-                                      paper_index=int(paper['paper_index']))
+    df = dao.get_paper_status_by_paper_index(student_id=student_id,
+                                             paper_index=int(paper['paper_index']))
     if not df.empty:
         Exception('this paper already finish')
 
@@ -103,7 +106,12 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
     cnt = Counter()
     type_cnt = Counter()
     type_dict = {}
-    for type_id, correct, question_score in zip(paper['type_id_list'], correct_list, question_score_list):
+    update_question_dict = {}
+    for question_name in question_name_list:
+        update_question_dict[question_name] = {}
+
+    for type_id, correct, question_score, question_id in zip(paper['type_id_list'], correct_list, question_score_list,
+                                                             paper['question_id_list']):
         # 計算大方向的類別
         question = df.loc[df['type_id'] == type_id].values[0].tolist()[0:-1]
         question = [i for i in question if i is not None]
@@ -113,10 +121,12 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
         type_name = ','.join(question[1:])
         type_cnt[f"{type_name}"] += 1
         type_dict[type_name] = question[0]
+        update_question_dict[question[1]][question_id] = 0
         if correct:
             score += question_score
             cnt[f"correct_{question[1]}"] += 1
             type_cnt[f"correct_{type_name}"] += 1
+            update_question_dict[question[1]][question_id] = 1
 
     dao.insert_student_paper(student_id=student_id,
                              student_answer_list=student_answer_list,
@@ -139,7 +149,8 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
         total_score=paper['total_score'],
         score=score,
         paper_type=paper['paper_type'],
-        answered_on=current_time
+        answered_on=current_time,
+        limit_time=paper['limit_time']
     )
 
     dao.update_student_status(student_id=student_id,
@@ -149,3 +160,6 @@ def first_test(student_answer_list=None, paper=None, student_id=None, paper_id=N
     dao.update_student_type(type_cnt=type_cnt,
                             type_dict=type_dict,
                             student_id=student_id)
+
+    dao = QuestionQuery(config)
+    dao.update_question_answer_status(update_question_dict=update_question_dict)

@@ -19,21 +19,66 @@ class ContentBasedTest(Resource):
     def get(self):
         rtn = RtnMessage()
         try:
-            pass
+            rtn = RtnMessage()
+            student_name, student_id, is_admin, is_teacher = get_identity()
+            try:
+                data = {
+                    "paper_index": request.json.get('paper_index', None)
+                }
+                if not data['paper_index']:
+                    raise Exception('input data missing')
+                dao = TestQuery(config)
+                df = dao.get_paper_status_by_paper_index(student_id=student_id,
+                                                         paper_index=data['paper_index'])
+                if df.empty:
+                    raise Exception('test not found in db')
+                if df['paper_type'][0] != 'content_based':
+                    raise Exception('paper_type not match')
+
+                question_name_list = dao.get_question_type()['type_name'].to_list()
+                question_df = dao.get_full_test_by_paper_index(student_id=student_id,
+                                                               paper_index=0,
+                                                               question_name_list=question_name_list)
+                paper_df = dao.get_paper_by_paper_index(student_id=student_id,
+                                                        paper_index=0)
+                # question reorder
+                question_df = question_df.set_index('uuid')
+                question_df = question_df.reindex(index=paper_df['question_id'])
+                question_df = question_df.reset_index()
+                question_df['student_answer'] = paper_df['student_answer']
+                rtn.result = {
+                    "limit_time": int(df['limit_time'][0]),
+                    "score": int(df['score'][0]),
+                    "total_score": int(df['total_score'][0]),
+                    "paper_type": df['paper_type'][0],
+                    "created_on": str(df['created_on'][0]),
+                    "answered_on": str(df['answered_on'][0]),
+                    "question_list":
+                        question_df.to_dict(orient='records')
+                }
+
+            except Exception as e:
+                self.logger.error(f"REQUEST PARAM: NONE")
+                self.logger.error(f"REQUEST IDENTITY: name:{student_name}, _id{student_id}, is_admin:{is_admin}, "
+                                  f"is_teacher:{is_teacher}")
+                rtn.state = False
+                rtn.msg = str(e)
+            return rtn.to_dict()
         except Exception as e:
             self.logger.error(repr(e))
             rtn.state = False
             rtn.msg = str(e)
         return rtn.to_dict()
 
+    # TODO: add question reason
     @token_require
     def post(self):
         rtn = RtnMessage()
         student_name, student_id, is_admin, is_teacher = get_identity()
         try:
             dao = TestQuery(config)
-            df = dao.get_paper_by_paper_index(student_id=student_id,
-                                              paper_index=0)
+            df = dao.get_paper_status_by_paper_index(student_id=student_id,
+                                                     paper_index=0)
             if df.empty:
                 raise Exception('first_test must done first')
 
@@ -46,7 +91,8 @@ class ContentBasedTest(Resource):
             total_question = 0
             question_df = pd.DataFrame()
             for index, row in df.iterrows():
-                question_need = row['need'] if row['need'] + total_question < total_question_need else total_question_need - total_question
+                question_need = row['need'] if row[
+                                                   'need'] + total_question < total_question_need else total_question_need - total_question
                 df = dao.get_random_question_with_limit_by_type_id_2(
                     question_name=row['type_name'].split(',')[0],
                     type_id=row['type_id'],
@@ -60,7 +106,8 @@ class ContentBasedTest(Resource):
 
             question_name_list = dao.get_question_type()['type_name'].to_list()
             # random pick question
-            pick_num_list = [(total_question_need - total_question) // len(question_name_list)] * len(question_name_list)
+            pick_num_list = [(total_question_need - total_question) // len(question_name_list)] * len(
+                question_name_list)
             for i in range(0, (total_question_need - total_question) % len(question_name_list)):
                 pick_num_list[i] += 1
 

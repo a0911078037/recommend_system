@@ -11,6 +11,7 @@ from .v1.teacher import Teacher
 from .v1.logout import Logout
 from .v1.refresh_token import RefreshToken
 from .v1.content_based_test import ContentBasedTest
+from .v1.student import Student
 
 
 router = [
@@ -23,7 +24,8 @@ router = [
     dict(resource=Teacher, urls=['/teacher'], endpoint='teacher'),
     dict(resource=Logout, urls=['/logout'], endpoint='logout'),
     dict(resource=RefreshToken, urls=['/refresh_token'], endpoint='refresh_token'),
-    dict(resource=ContentBasedTest, urls=['/content_based_test'], endpoint='ContentBasedTest'),
+    dict(resource=ContentBasedTest, urls=['/content_based_test'], endpoint='content_based_test'),
+    dict(resource=Student, urls=['/student'], endpoint='student'),
     dict(resource=DifficultyType, urls=['/difficulty_type'], endpoint='difficulty_type')
 ]
 

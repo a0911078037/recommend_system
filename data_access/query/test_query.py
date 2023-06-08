@@ -38,7 +38,7 @@ class TestQuery:
                         WHERE t2.correct=1) AND t1.type_id='{type_id}' LIMIT {pick_num};
                         """
                     df = self._db_handler_question.execute_dataframe(sql)
-                    data_frame = data_frame.append(df, ignore_index=True)
+                    data_frame = pd.concat([data_frame, df], ignore_index=True)
             return data_frame
 
         except Exception as e:
@@ -83,7 +83,7 @@ class TestQuery:
                     WHERE t2.question_id IS NULL LIMIT {pick_num};
                     """
                 df = self._db_handler_question.execute_dataframe(sql)
-                data_frame = data_frame.append(df, ignore_index=True)
+                data_frame = pd.concat([data_frame, df], ignore_index=True)
             return data_frame
         except Exception as e:
             self.logger.error(e)
@@ -131,7 +131,7 @@ class TestQuery:
             df = self._db_handler_student.execute_dataframe(sql)
             if not df['p_index'][0]:
                 return 0
-            return df['p_index'][0]
+            return df['p_index'][0] + 1
         except Exception as e:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: student_id:{student_id}")
@@ -180,16 +180,17 @@ class TestQuery:
 
     def insert_student_paper_status(self, student_id=None, paper_index=None, paper_id=None, answered_right=None,
                                     total_question=None, created_on=None, score=None, paper_type=None,
-                                    total_score=None, answered_on=None):
+                                    total_score=None, answered_on=None, limit_time=None):
         try:
             sql = \
                 f"""
                 INSERT INTO `{student_id}_status`
                 (paper_index, paper_id, answered_right, total_question, created_on, score, paper_type, total_score, 
-                answered_on)
-                VALUES(?,?,?,?,?,?,?,?,?)
+                answered_on, limit_time)
+                VALUES(?,?,?,?,?,?,?,?,?,?)
                 """
-            data = (paper_index, paper_id, answered_right, total_question, created_on, score, paper_type, total_score, answered_on)
+            data = (paper_index, paper_id, answered_right, total_question, created_on, score, paper_type, total_score,
+                    answered_on, limit_time)
             self._db_handler_student.insert(sql, data)
         except Exception as e:
             self.logger.error(e)
@@ -264,7 +265,7 @@ class TestQuery:
             self.logger.error(f"FUNCTION PARAM: paper_type:{paper_type}, student_id:{student_id}")
             raise Exception('error in query')
 
-    def get_paper_by_paper_index(self, student_id=None, paper_index=None):
+    def get_paper_status_by_paper_index(self, student_id=None, paper_index=None):
         try:
             sql = \
                 f"""
@@ -300,6 +301,27 @@ class TestQuery:
             self.logger.error(f"FUNCTION PARAM: type_cnt:{type_cnt}, student_id:{student_id}, type_dict:{type_dict}")
             raise Exception('error in query')
 
+    def get_full_test_by_paper_index(self, student_id=None, paper_index=None, question_name_list=None):
+        try:
+            sql = ''
+            for question_name in question_name_list:
+                sql += \
+                    f"""
+                    SELECT DISTINCT t1.uuid, t1.question, t1.options1, t1.options2, t1.options3, t1.options4, 
+                    t1.options5, t1.answer, t1.type_id, t1.category FROM recommend_system.{question_name}_questions as t1
+                    WHERE uuid IN (SELECT question_id
+                    FROM student_base.`{student_id}_paper`
+                    WHERE paper_index={paper_index})
+                    UNION 
+                    """
+            sql = sql[:-27]
+            df = self._db_handler_question.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: paper_index:{paper_index}, student_id:{student_id}")
+            raise Exception('error in query')
+
     def get_student_type(self, student_id=None):
         try:
             sql = \
@@ -311,4 +333,18 @@ class TestQuery:
         except Exception as e:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: student_id:{student_id}")
+            raise Exception('error in query')
+
+    def get_paper_by_paper_index(self, student_id=None, paper_index=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `{student_id}_paper`
+                WHERE paper_index={paper_index}
+                """
+            df = self._db_handler_student.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id:{student_id}, paper_index:{paper_index}")
             raise Exception('error in query')

@@ -242,5 +242,20 @@ class QuestionQuery:
             self.logger.error(f"FUNCTION PARAM: question_type:{question_type}, difficulty:{difficulty}, category:{category}")
             raise Exception('error in query')
 
-    def get_question_type_id(self):
-        pass
+    def update_question_answer_status(self, update_question_dict=None):
+        try:
+            for question_name, question_dict in update_question_dict.items():
+                sql = \
+                    f"""
+                    UPDATE `{question_name}_questions`
+                    SET answer_nums = answer_nums + 1, correct_nums = correct_nums + ?
+                    WHERE uuid=?
+                    """
+                data_list = [(correct, question_id) for question_id, correct in question_dict.items()]
+                self._db_handler.execute_many(sql, data_list)
+
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(
+                f"FUNCTION PARAM: update_question_dict:{update_question_dict}")
+            raise Exception('error in query')

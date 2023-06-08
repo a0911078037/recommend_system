@@ -53,6 +53,7 @@ class StudentQuery:
                 `total_score` smallint NOT NULL,
                 `created_on` DATETIME NOT NULL,
                 `answered_on` DATETIME NOT NULL,
+                `limit_time` INT NOT NULL,
                 PRIMARY KEY (`paper_index`),
                 UNIQUE INDEX `paper_index_UNIQUE` (`paper_index` ASC) VISIBLE);
                 """
@@ -110,4 +111,17 @@ class StudentQuery:
         except Exception as e:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: user_id: {user_id}")
+            raise Exception('error in query')
+
+    def get_student_status(self, student_id=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `{student_id}_status`
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id: {student_id}")
             raise Exception('error in query')

@@ -20,10 +20,31 @@ class FirstTest(Resource):
         student_name, student_id, is_admin, is_teacher = get_identity()
         try:
             dao = TestQuery(config)
-            df = dao.get_paper_by_paper_index(student_id=student_id,
-                                              paper_index='0')
+            df = dao.get_paper_status_by_paper_index(student_id=student_id,
+                                                     paper_index='0')
             if df.empty:
-                raise Exception('test not found')
+                raise Exception('test not found in db')
+            question_name_list = dao.get_question_type()['type_name'].to_list()
+            question_df = dao.get_full_test_by_paper_index(student_id=student_id,
+                                                           paper_index=0,
+                                                           question_name_list=question_name_list)
+            paper_df = dao.get_paper_by_paper_index(student_id=student_id,
+                                                    paper_index=0)
+            # question reorder
+            question_df = question_df.set_index('uuid')
+            question_df = question_df.reindex(index=paper_df['question_id'])
+            question_df = question_df.reset_index()
+            question_df['student_answer'] = paper_df['student_answer']
+            rtn.result = {
+                "limit_time": int(df['limit_time'][0]),
+                "score": int(df['score'][0]),
+                "total_score": int(df['total_score'][0]),
+                "paper_type": df['paper_type'][0],
+                "created_on": str(df['created_on'][0]),
+                "answered_on": str(df['answered_on'][0]),
+                "question_list":
+                    question_df.to_dict(orient='records')
+            }
 
         except Exception as e:
             self.logger.error(f"REQUEST PARAM: NONE")
@@ -39,8 +60,8 @@ class FirstTest(Resource):
         student_name, student_id, is_admin, is_teacher = get_identity()
         try:
             dao = TestQuery(config)
-            df = dao.get_paper_by_paper_index(student_id=student_id,
-                                              paper_index=0)
+            df = dao.get_paper_status_by_paper_index(student_id=student_id,
+                                                     paper_index=0)
             if not df.empty:
                 raise Exception('first_test already done')
             paper_index = dao.get_new_paperIndex(student_id=student_id)
