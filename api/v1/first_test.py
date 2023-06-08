@@ -56,7 +56,7 @@ class FirstTest(Resource):
                 question_pick_dict[question_name] = {}
                 if pick_num <= len(df[question_name]):
                     for i in range(pick_num):
-                        question_pick_dict[question_name][df[question_name][i]] = 1
+                        question_pick_dict[question_name][df[question_name][i][0]] = 1
                 else:
                     for i, type_list in enumerate(df[question_name]):
                         if i < pick_num % len(df[question_name]):

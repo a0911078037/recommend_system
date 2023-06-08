@@ -32,8 +32,10 @@ class TestQuery:
                         f"""
                         SELECT t1.uuid, t1.question, t1.options1, t1.options2, t1.options3, t1.options4, t1.options5, 
                         t1.answer, t1.type_id, t1.category FROM {question_name}_questions as t1
-                        WHERE type_id = '{type_id}'
-                        LIMIT {pick_num}
+                        WHERE t1.uuid
+                        NOT IN(
+                        SELECT t2.question_id FROM student_base.`{student_id}_answer` as t2
+                        WHERE t2.correct=1) AND t1.type_id='{type_id}' LIMIT {pick_num};
                         """
                     df = self._db_handler_question.execute_dataframe(sql)
                     data_frame = data_frame.append(df, ignore_index=True)
@@ -43,6 +45,26 @@ class TestQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: question_name_list:{question_name_list}, student_id:{student_id}, "
                               f"question_pick_dict:{question_pick_dict}")
+            raise Exception('error in query')
+
+    def get_random_question_with_limit_by_type_id_2(self, question_name, student_id, type_id, pick_num):
+        try:
+            sql = \
+                f"""
+                SELECT t1.uuid, t1.question, t1.options1, t1.options2, t1.options3, t1.options4, t1.options5, 
+                t1.answer, t1.type_id, t1.category FROM recommend_system.{question_name}_questions as t1
+                WHERE t1.uuid
+                NOT IN(
+                SELECT t2.question_id FROM student_base.`{student_id}_answer` as t2
+                WHERE t2.correct=1) AND t1.type_id='{type_id}' LIMIT {pick_num};
+                """
+            df = self._db_handler_question.execute_dataframe(sql)
+            return df
+
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: question_name:{question_name}, student_id:{student_id}, "
+                              f"type_id:{type_id}, pick_num:{pick_num}")
             raise Exception('error in query')
 
     def get_random_question_with_limit_list_each_table(self, question_name_list=None, student_id=None,
@@ -276,4 +298,17 @@ class TestQuery:
         except Exception as e:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: type_cnt:{type_cnt}, student_id:{student_id}, type_dict:{type_dict}")
+            raise Exception('error in query')
+
+    def get_student_type(self, student_id=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `{student_id}_type`
+                """
+            df = self._db_handler_student.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id:{student_id}")
             raise Exception('error in query')
