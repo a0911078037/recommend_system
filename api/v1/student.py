@@ -19,14 +19,15 @@ class Student(Resource):
         try:
             dao = StudentQuery(config)
             df = dao.get_student_status(student_id=student_id)
-            df.astype({"paper_index": 'int', 'answered_right': 'int', 'total_question': 'int',
-                       'score': 'int', 'total_score': 'int', 'limit_time': 'int'})
-            df['answered_on'] = df['answered_on'].dt.strftime('%Y-%m-%d %H:%M:%S')
-            df['created_on'] = df['created_on'].dt.strftime('%Y-%m-%d %H:%M:%S')
-            df = df.to_dict(orient='records')
-            rtn.result = {
-                student_name: df
-            }
+            if not df.empty:
+                df.astype({"paper_index": 'int', 'answered_right': 'int', 'total_question': 'int',
+                           'score': 'int', 'total_score': 'int', 'limit_time': 'int'})
+                df['answered_on'] = df['answered_on'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                df['created_on'] = df['created_on'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                df = df.to_dict(orient='records')
+            else:
+                df = None
+            rtn.result = df
         except Exception as e:
             self.logger.error(e, exc_info=True)
             self.logger.error(f"REQUEST PARAM: NONE")

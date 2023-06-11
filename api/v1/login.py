@@ -30,12 +30,13 @@ class Login(Resource):
                 raise Exception('帳號或密碼錯誤')
             pws = hashlib.sha256((df['SALT'][0] + data['pws']).encode('utf-8')).hexdigest()
             if df['PASSWORD'][0] == pws:
-                token = create_token(is_admin=df['is_admin'][0],
-                                     is_teacher=df['is_teacher'][0],
-                                     name=df['NAME'][0],
-                                     user_id=df['USER_ID'][0])
+                token, refresh_token = create_token(is_admin=df['is_admin'][0],
+                                                    is_teacher=df['is_teacher'][0],
+                                                    name=df['NAME'][0],
+                                                    user_id=df['USER_ID'][0])
                 dao.update_token(user_id=df['USER_ID'][0],
-                                 token=token)
+                                 token=token,
+                                 refresh_token=refresh_token)
                 rtn.result = {
                     'name': df['NAME'][0],
                     'token': token

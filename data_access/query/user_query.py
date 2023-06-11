@@ -92,12 +92,12 @@ class UserQuery:
             self.logger.error(f"FUNCTION PARAM: acc:{acc}")
             raise Exception('error in query')
 
-    def update_token(self, user_id='', token=''):
+    def update_token(self, user_id=None, token=None, refresh_token=None):
         try:
             sql = \
                 f"""
                 UPDATE users
-                SET token="{token}"
+                SET token="{token}", refresh_token="{refresh_token}"
                 WHERE user_id="{user_id}"
                 """
             self._db_handler.update(sql)
@@ -111,7 +111,7 @@ class UserQuery:
             sql = \
                 f"""
                 UPDATE users
-                SET token=NULL
+                SET token=NULL, refresh_token=NULL
                 WHERE user_id="{user_id}"
                 """
             self._db_handler.update(sql)

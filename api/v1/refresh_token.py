@@ -15,6 +15,8 @@ class RefreshToken(Resource):
             data = {
                 "refresh_token": request.json.get('refresh_token', None)
             }
+            if not data['refresh_token']:
+                raise Exception('input data missing')
             new_token = create_token_by_refresh(refresh_token=data["refresh_token"])
             rtn.result.append(
                 {

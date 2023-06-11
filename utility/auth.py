@@ -11,10 +11,12 @@ def create_token_by_refresh(refresh_token=None):
         refresh_token, key=config['API']['SECRETKEY'], algorithms='HS256'
     )
     refresh_time = data['refresh_token']
-    if refresh_time >= config['API']['REFRESH_MAX']:
+    if refresh_time >= int(config['API']['REFRESH_MAX']):
         raise Exception('refresh time exceed limit')
     dao = UserQuery(config)
     df = dao.get_user_by_id(user_id=data['_id'])
+    if df.empty or df['refresh_token'][0] != refresh_token:
+        raise Exception('token invalid')
     new_token = create_token(is_admin=df['is_admin'][0],
                              is_teacher=df['is_teacher'][0],
                              name=df['NAME'][0],
@@ -23,7 +25,8 @@ def create_token_by_refresh(refresh_token=None):
                              refresh_exp=data['exp']
                              )
     dao.update_token(user_id=data['_id'],
-                     token=new_token)
+                     token=new_token,
+                     refresh_token=refresh_token)
     return new_token
 
 
@@ -71,6 +74,7 @@ def create_token(is_admin=False, is_teacher=False, name=None, user_id=None, refr
     # convert into timestamp
     time_now = datetime.datetime.timestamp(time_now)
     time_exp = datetime.datetime.timestamp(time_exp)
+    refresh_token = create_refresh_token(user_id=user_id, refresh_time=refresh_time, refresh_exp=refresh_exp)
     headers = {
         "alg": "HS256",
         "typ": "JWT"
@@ -83,14 +87,14 @@ def create_token(is_admin=False, is_teacher=False, name=None, user_id=None, refr
         "iat": time_now,
         "is_admin": bool(is_admin),
         "is_teacher": bool(is_teacher),
-        "refresh_token": create_refresh_token(user_id=user_id, refresh_time=refresh_time, refresh_exp=refresh_exp)
+        "refresh_token": refresh_token
     }
     token = jwt.encode(
         headers=headers,
         payload=payload,
         key=config['API']['SECRETKEY']
     )
-    return token
+    return token, refresh_token
 
 
 def token_require(f):
