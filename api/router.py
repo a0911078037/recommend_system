@@ -12,6 +12,8 @@ from .v1.logout import Logout
 from .v1.refresh_token import RefreshToken
 from .v1.content_based_test import ContentBasedTest
 from .v1.student import Student
+from .v1.tf_idf import TF_IDF
+from .v1.submit_survey import SubmitSurvey
 
 
 router = [
@@ -26,6 +28,8 @@ router = [
     dict(resource=RefreshToken, urls=['/refresh_token'], endpoint='refresh_token'),
     dict(resource=ContentBasedTest, urls=['/content_based_test'], endpoint='content_based_test'),
     dict(resource=Student, urls=['/student'], endpoint='student'),
+    dict(resource=TF_IDF, urls=['/tf_idf'], endpoint='tf_idf'),
+    dict(resource=SubmitSurvey, urls=['/submit_survey'], endpoint='submit_survey'),
     dict(resource=DifficultyType, urls=['/difficulty_type'], endpoint='difficulty_type')
 ]
 

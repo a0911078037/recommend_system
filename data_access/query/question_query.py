@@ -256,6 +256,18 @@ class QuestionQuery:
 
         except Exception as e:
             self.logger.error(e)
-            self.logger.error(
-                f"FUNCTION PARAM: update_question_dict:{update_question_dict}")
+            self.logger.error(f"FUNCTION PARAM: update_question_dict:{update_question_dict}")
+            raise Exception('error in query')
+
+    def get_satisfy_type(self):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `satisfy_type`
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: NONE")
             raise Exception('error in query')

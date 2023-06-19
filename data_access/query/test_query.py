@@ -348,3 +348,49 @@ class TestQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: student_id:{student_id}, paper_index:{paper_index}")
             raise Exception('error in query')
+
+    def get_paper_status_by_paper_id(self, paper_id=None, student_id=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `{student_id}_status`
+                WHERE paper_id='{paper_id}'
+                """
+            df = self._db_handler_student.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id:{student_id}, paper_id:{paper_id}")
+            raise Exception('error in query')
+
+    def update_paper_satisfaction(self, paper_index=None, student_id=None, question_id_list=None, survey_answer_list=None):
+        data_list = []
+        try:
+            sql = \
+                f"""
+                UPDATE `{student_id}_paper`
+                SET satisfaction = ?
+                WHERE question_id = ? AND paper_index = {paper_index}
+                """
+            data_list = [(x, y) for x, y in zip(survey_answer_list, question_id_list)]
+            self._db_handler_student.execute_many(sql, data_list)
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id:{student_id}, paper_index:{paper_index}, "
+                              f"question_id_list:{question_id_list}, survey_answer_list:{survey_answer_list}")
+            raise Exception('error in query')
+
+    def update_paper_status_satisfaction(self, paper_index=None, student_id=None, paper_satisfaction=None):
+        try:
+            sql = \
+                f"""
+                UPDATE `{student_id}_status`
+                SET paper_satisfaction={paper_satisfaction}
+                WHERE paper_index = {paper_index}
+                """
+            self._db_handler_student.update(sql)
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id:{student_id}, paper_index:{paper_index}, "
+                              f"paper_satisfaction:{paper_satisfaction}")
+            raise Exception('error in query')

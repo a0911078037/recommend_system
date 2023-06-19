@@ -36,7 +36,8 @@ class StudentQuery:
                 `question_id` varchar(36) NOT NULL,
                 `answer` varchar(10) NOT NULL,
                 `student_answer` varchar(10) NOT NULL,
-                `correct` tinyint NOT NULL
+                `correct` tinyint NOT NULL,
+                `satisfaction` smallint NOT NULL DEFAULT -1
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
                 """
             self._db_handler.insert(sql)
@@ -52,6 +53,7 @@ class StudentQuery:
                 `score` smallint NOT NULL,
                 `total_score` smallint NOT NULL,
                 `created_on` DATETIME NOT NULL,
+                `paper_satisfaction` SMALLINT NOT NULL DEFAULT -1,
                 `answered_on` DATETIME NOT NULL,
                 `limit_time` INT NOT NULL,
                 PRIMARY KEY (`paper_index`),
