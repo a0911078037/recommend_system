@@ -21,7 +21,7 @@ class Test(Resource):
         student_name, student_id, is_admin, is_teacher = get_identity()
         try:
             data = {
-                "paper_index": request.json.get('paper_index', None)
+                "paper_index": request.args.get('paper_index', None)
             }
             if not data['paper_index']:
                 raise Exception('input data missing')
