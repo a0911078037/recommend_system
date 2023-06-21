@@ -42,7 +42,7 @@ class Test(Resource):
             question_df = question_df.reindex(index=paper_df['question_id'])
             question_df = question_df.reset_index()
             question_df['student_answer'] = paper_df['student_answer']
-            rtn.result = {
+            rtn.result.append({
                 "limit_time": int(df['limit_time'][0]),
                 "score": int(df['score'][0]),
                 "total_score": int(df['total_score'][0]),
@@ -51,7 +51,9 @@ class Test(Resource):
                 "answered_on": str(df['answered_on'][0]),
                 "question_list":
                     question_df.to_dict(orient='records')
-            }
+            })
+
+
         except Exception as e:
             self.logger.error(repr(e))
             rtn.state = False
