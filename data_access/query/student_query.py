@@ -1,3 +1,5 @@
+import pandas as pd
+
 from data_access.db_connect.MySQL import mysqlDB
 from utility.logger import get_logger
 
@@ -127,3 +129,36 @@ class StudentQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: student_id: {student_id}")
             raise Exception('error in query')
+
+    def get_all_student_status(self, student_id_list=None):
+        data = pd.DataFrame()
+        try:
+            for student_id in student_id_list:
+                sql = \
+                    f"""
+                    SELECT * FROM `{student_id}_status`
+                    """
+                df = self._db_handler.execute_dataframe(sql)
+                data = pd.concat([df, data], ignore_index=True)
+            return data
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id_list: {student_id_list}")
+            raise Exception('error in query')
+
+    def get_all_student_id(self, teacher_id=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `student_status`
+                {f'WHERE teacher_id={teacher_id}' if teacher_id else None}
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: teacher_id: {teacher_id}")
+            raise Exception('error in query')
+
+    def get_all_student_paper(self):
+        pass

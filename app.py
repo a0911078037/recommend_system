@@ -4,6 +4,8 @@ from flask_cors import CORS
 from utility.EnvLoader import load_env_file
 import api
 import platform
+import warnings
+warnings.simplefilter(action='ignore', category=UserWarning)
 
 config = load_env_file('./env/api_config.yml')
 

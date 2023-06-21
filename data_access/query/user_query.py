@@ -133,3 +133,16 @@ class UserQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: user_id:{user_id}")
             raise Exception('error in query')
+
+    def get_all_userid(self):
+        try:
+            sql = \
+                f"""
+                SELECT USER_ID FROM `users`
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: NONE")
+            raise Exception('error in query')

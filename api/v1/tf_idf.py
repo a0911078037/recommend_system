@@ -9,8 +9,15 @@ import os
 import pandas as pd
 import numpy as np
 
-
-ws = WS('./model/tf_idf/data', disable_cuda=False)
+# folder and model check
+if not os.path.exists('./model'):
+    os.mkdir('./model')
+if not os.path.exists('./model/tf_idf'):
+    os.mkdir('./model/tf_idf')
+if not os.path.exists('./model/tf_idf/data'):
+    data_utils.download_data_gdown("./model/tf_idf")
+    os.remove('./model/tf_idf/data.zip')
+# ws = WS('./model/tf_idf/data', disable_cuda=False)
 
 
 class TF_IDF(Resource):
@@ -34,15 +41,6 @@ class TF_IDF(Resource):
         rtn = RtnMessage()
         data = None
         try:
-            # folder and model check
-            if not os.path.exists('./model'):
-                os.mkdir('./model')
-            if not os.path.exists('./model/tf_idf'):
-                os.mkdir('./model/tf_idf')
-            if not os.path.exists('./model/tf_idf/data'):
-                data_utils.download_data_gdown("./model/tf_idf")
-                os.remove('./model/tf_idf/data.zip')
-
             # get all question and replace with \n
             dao = QuestionQuery(config)
             question_type_list = dao.get_question_type()['type_name'].to_list()
