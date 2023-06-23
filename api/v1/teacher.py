@@ -23,8 +23,8 @@ class Teacher(Resource):
             dao = QuestionQuery(config)
             question_name_list = dao.get_question_type()['type_name'].to_list()
             df = dao.get_all_question(table_list=question_name_list)
-            df = df[['question', 'options1', 'options2', 'options3', 'options4', 'options5', 'answer', 'answer_nums',
-                     'correct_nums', 'category']]
+            df = df[['uuid', 'question', 'options1', 'options2', 'options3', 'options4', 'options5', 'answer',
+                     'answer_nums', 'correct_nums', 'category']]
             rtn.result = df.to_dict(orient='records')
 
         except Exception as e:

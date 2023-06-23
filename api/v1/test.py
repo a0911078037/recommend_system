@@ -53,7 +53,6 @@ class Test(Resource):
                     question_df.to_dict(orient='records')
             })
 
-
         except Exception as e:
             self.logger.error(repr(e))
             rtn.state = False
