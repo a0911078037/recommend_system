@@ -151,7 +151,7 @@ class StudentQuery:
             sql = \
                 f"""
                 SELECT * FROM `student_status`
-                {f'WHERE teacher_id={teacher_id}' if teacher_id else None}
+                {f'WHERE teacher_id="{teacher_id}"' if teacher_id else None}
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
@@ -160,5 +160,66 @@ class StudentQuery:
             self.logger.error(f"FUNCTION PARAM: teacher_id: {teacher_id}")
             raise Exception('error in query')
 
-    def get_all_student_paper(self):
-        pass
+    def get_max_paper_index(self, student_id_list=None):
+        paper_length = 0
+        data = None
+        try:
+            for student_id in student_id_list:
+                paper_len = 0
+                sql = \
+                    f"""
+                    SELECT length(paper_index) as len FROM `{student_id}_status`
+                    """
+                df = self._db_handler.execute_dataframe(sql)
+                if not df.empty:
+                    paper_len = df['len'][0]
+                if paper_len > paper_length:
+                    paper_length = paper_len
+                    sql = \
+                        f"""
+                        SELECT * FROM `{student_id}_status`
+                        """
+                    data = self._db_handler.execute_dataframe(sql)
+            return data
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id_list: {student_id_list}")
+            raise Exception('error in query')
+
+    def get_student_status_by_teacher(self, is_admin=None, teacher_id=None):
+        try:
+            sql = None
+            if is_admin:
+                sql = \
+                    f"""
+                    SELECT * FROM student_base.student_status as t1
+                    join recommend_system.users as t2 on t2.USER_ID = t1.student_id
+                    where is_teacher=0 and is_admin=0
+                    """
+            else:
+                sql = \
+                    f"""
+                    SELECT * FROM student_base.student_status as t1
+                    join recommend_system.users as t2 on t2.USER_ID = t1.student_id
+                    where teacher_id = '{teacher_id}' and is_teacher=0 and is_admin=0
+                    """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: is_admin: {is_admin}, teacher_id: {teacher_id}")
+            raise Exception('error in query')
+
+    def get_student_status_details(self, student_id=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `student_status`
+                WHERE student_id = '{student_id}'
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: student_id: {student_id}")
+            raise Exception('error in query')

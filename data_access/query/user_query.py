@@ -146,3 +146,16 @@ class UserQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: NONE")
             raise Exception('error in query')
+
+    def get_class_type(self):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM `class_type`
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: NONE")
+            raise Exception('error in query')

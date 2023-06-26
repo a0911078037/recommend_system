@@ -17,7 +17,8 @@ if not os.path.exists('./model/tf_idf'):
 if not os.path.exists('./model/tf_idf/data'):
     data_utils.download_data_gdown("./model/tf_idf")
     os.remove('./model/tf_idf/data.zip')
-ws = WS('./model/tf_idf/data', disable_cuda=False)
+if not bool(int(config['API']['DEBUG'])):
+    ws = WS('./model/tf_idf/data', disable_cuda=False)
 
 
 class TF_IDF(Resource):
