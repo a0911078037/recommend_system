@@ -7,6 +7,7 @@ import uuid
 from utility.logger import get_logger
 import os
 import datetime
+import pandas as pd
 
 
 class Question(Resource):
@@ -103,7 +104,7 @@ class Question(Resource):
                 "options4": request.form.get('options4') or None,
                 "options5": request.form.get('options5') or None,
                 "answer": request.form['answer'],
-                "type": request.form['type'],
+                "type_id": request.form['type_id'],
                 "difficulty": request.form['difficulty'],
                 "image": request.files.get('image') or None,
                 "category": request.form['category']
@@ -113,12 +114,14 @@ class Question(Resource):
                 raise Exception('input missing')
 
             dao = QuestionQuery(config)
-            type_list = data['type'].split(',')
-            df = dao.get_question_type()
-            type_id = \
-                dao.get_question_class_id(class_type=df['type_name'].to_list(), type_list=type_list)['type_id'].values[0]
-            if not len(df):
-                raise Exception('type cannot found in db')
+            question_name_list = dao.get_question_type()['type_name'].to_list()
+            type_id_df_list = pd.DataFrame()
+            for question_name in question_name_list:
+                df = dao.get_question_type_by_table_name(table_name=question_name)
+                type_id_df_list = pd.concat([type_id_df_list, df])
+            type_id_df = type_id_df_list[type_id_df_list['type_id'] == data["type_id"]]
+            if type_id_df.empty:
+                raise Exception('type_id invalid')
 
             df = dao.get_difficulty_type()
             if not (df['type'].astype(str) == data['difficulty']).any():
@@ -163,14 +166,14 @@ class Question(Resource):
                 options4=data['options4'],
                 options5=data['options5'],
                 answer=data['answer'],
-                type_id=type_id,
+                type_id=data['type_id'],
                 difficulty=data['difficulty'],
                 image_path=image_path,
                 category=data['category'],
-                table_name=type_list[0]
+                table_name=type_id_df['type1'][0]
             )
 
-            dao.update_question_type_question_count(question_type=type_list[0], type_id=type_id)
+            dao.update_question_type_question_count(question_type=type_id_df['type1'][0], type_id=data['type_id'])
 
         except Exception as e:
             self.logger.error(e, exc_info=True)
@@ -196,10 +199,12 @@ class Question(Resource):
                 "image": request.files.get('image', None),
                 "category": request.form['category'],
                 "uid": request.form['uid'],
-                "question_type_id": request.form['question_type_id']
+                "question_type_id": request.form['question_type_id'],
+                "type_id": request.form['type_id']
             }
             if not data["question"] or not data["options1"] or not data["options2"] or not data["answer"] \
-                    or not data["difficulty"] or not data["category"] or not data['uid']:
+                    or not data["difficulty"] or not data["category"] or not data['uid'] or not data['type_id'] or \
+                    not data['question_type']:
                 raise Exception('input missing')
 
             if len(data["question"]) >= 200 or len(data["options1"]) >= 100 or len(data["options2"]) >= 100 \
@@ -212,7 +217,7 @@ class Question(Resource):
             df = dao.get_question_type()
 
             if not (df['type'].values.astype(str) == data['question_type_id']).any():
-                raise Exception('invalid type id')
+                raise Exception('invalid question_type_id')
             type_name = df[df['type'].astype(str) == data['question_type_id']]['type_name'].to_list()[0].lower()
 
             # check question is in db
@@ -227,6 +232,11 @@ class Question(Resource):
             df = dao.get_question_category()
             if not (df['type'].astype(str) == data['category']).any():
                 raise Exception('category invalid')
+
+            df = dao.get_question_type_by_table_name(table_name=type_name.lower())
+            type_id_list = df['type_id'].to_list()
+            if data['type_id'] not in type_id_list:
+                raise Exception('invalid type id')
 
             # checking answer format and type
             answer_list = data['answer'].split(',')
@@ -267,7 +277,8 @@ class Question(Resource):
                 image_path=image_path,
                 category=data['category'],
                 table_name=type_name,
-                updated_on=updated_on
+                updated_on=updated_on,
+                type_id=data['type_id']
             )
 
         except Exception as e:

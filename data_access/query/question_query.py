@@ -113,6 +113,19 @@ class QuestionQuery:
             self.logger.error(f"FUNCTION PARAM: type_name_list: {type_name_list}, type_id: {type_id}")
             raise Exception('error in query')
 
+    def get_question_type_by_table_name(self, table_name=None):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM {table_name}_type
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: table_name: {table_name}")
+            raise Exception('error in query')
+
     def get_question_by_type_id(self, table_name=None, type_id=None, difficulty=None, category=None):
         try:
             sql = \
@@ -135,7 +148,7 @@ class QuestionQuery:
             sql = \
                 f"""
                 SELECT * FROM difficulty_type
-                {('WHERE type="'+type_id+'"') if type_id else ''}
+                {('WHERE type="' + type_id + '"') if type_id else ''}
                 """
             df = self._db_handler.execute_dataframe(sql)
             return df
@@ -173,14 +186,14 @@ class QuestionQuery:
 
     def update_question_by_uid(self, question=None, options1=None, options2=None, options3=None, options4=None,
                                options5=None, answer=None, difficulty=None, image_path=None, category=None,
-                               table_name=None, uid=None, updated_on=None):
+                               table_name=None, uid=None, updated_on=None, type_id=None):
         try:
             sql = \
                 f"""
                 UPDATE {table_name}_questions
                 SET question="{question}", options1="{options1}", options2="{options2}", options3="{options3}", 
                 options4="{options4}", options5="{options5}", answer="{answer}", difficulty="{difficulty}", 
-                image_path="{image_path}", category="{category}", updated_on="{updated_on}"
+                image_path="{image_path}", category="{category}", updated_on="{updated_on}", type_id="{type_id}"
                 WHERE uuid="{uid}"
                 """
             self._db_handler.update(sql)
@@ -239,19 +252,32 @@ class QuestionQuery:
             return df
         except Exception as e:
             self.logger.error(e)
-            self.logger.error(f"FUNCTION PARAM: question_type:{question_type}, difficulty:{difficulty}, category:{category}")
+            self.logger.error(
+                f"FUNCTION PARAM: question_type:{question_type}, difficulty:{difficulty}, category:{category}")
             raise Exception('error in query')
 
     def update_question_answer_status(self, update_question_dict=None):
         try:
             for question_name, question_dict in update_question_dict.items():
+                data_list = []
                 sql = \
                     f"""
                     UPDATE `{question_name}_questions`
-                    SET answer_nums = answer_nums + 1, correct_nums = correct_nums + ?
+                    SET answer_nums = answer_nums + 1, correct_nums = correct_nums + ?, 
+                    options1_count = options1_count + ?, options2_count = options2_count + ?, 
+                    options3_count = options3_count + ?, options4_count = options4_count + ?, 
+                    options5_count = options5_count + ?
                     WHERE uuid=?
                     """
-                data_list = [(correct, question_id) for question_id, correct in question_dict.items()]
+                for question_id, answer_dict in question_dict.items():
+                    student_answer = answer_dict['student_answer'].split(',')
+                    correct = answer_dict['correct']
+                    options1_count = 1 if '1' in student_answer else 0
+                    options2_count = 1 if '2' in student_answer else 0
+                    options3_count = 1 if '3' in student_answer else 0
+                    options4_count = 1 if '4' in student_answer else 0
+                    options5_count = 1 if '5' in student_answer else 0
+                    data_list.append((correct, options1_count, options2_count, options3_count, options4_count, options5_count, question_id))
                 self._db_handler.execute_many(sql, data_list)
 
         except Exception as e:

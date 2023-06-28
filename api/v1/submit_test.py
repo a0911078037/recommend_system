@@ -110,8 +110,11 @@ def submit_test(student_answer_list=None, paper=None, student_id=None, paper_id=
     for question_name in question_name_list:
         update_question_dict[question_name] = {}
 
-    for type_id, correct, question_score, question_id in zip(paper['type_id_list'], correct_list, question_score_list,
-                                                             paper['question_id_list']):
+    for type_id, correct, question_score, question_id, student_answer in zip(paper['type_id_list'],
+                                                                             correct_list,
+                                                                             question_score_list,
+                                                                             paper['question_id_list'],
+                                                                             student_answer_list):
         # 計算大方向的類別
         question = df.loc[df['type_id'] == type_id].values[0].tolist()[0:-1]
         question = [i for i in question if i is not None]
@@ -121,12 +124,14 @@ def submit_test(student_answer_list=None, paper=None, student_id=None, paper_id=
         type_name = ','.join(question[1:])
         type_cnt[f"{type_name}"] += 1
         type_dict[type_name] = question[0]
-        update_question_dict[question[1]][question_id] = 0
+        update_question_dict[question[1]][question_id] = {}
+        update_question_dict[question[1]][question_id]['correct'] = 0
+        update_question_dict[question[1]][question_id]['student_answer'] = student_answer
         if correct:
             score += question_score
             cnt[f"correct_{question[1]}"] += 1
             type_cnt[f"correct_{type_name}"] += 1
-            update_question_dict[question[1]][question_id] = 1
+            update_question_dict[question[1]][question_id]['correct'] = 1
 
     dao.insert_student_paper(student_id=student_id,
                              student_answer_list=student_answer_list,

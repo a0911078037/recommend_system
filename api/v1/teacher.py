@@ -33,9 +33,26 @@ class Teacher(Resource):
             if data['get_type'] == 'question_db':
                 dao = QuestionQuery(config)
                 question_name_list = dao.get_question_type()['type_name'].to_list()
+                type_id_df = pd.DataFrame()
+                for question_name in question_name_list:
+                    df = dao.get_question_type_by_table_name(table_name=question_name)
+                    type_id_df = pd.concat([type_id_df, df])
+                type_id_df = type_id_df[['type_id', 'type1']]
+                major_type_df = dao.get_question_type()
+                major_type_dict = {}
+                for key, value in zip(major_type_df['type_name'].tolist(), major_type_df['type'].tolist()):
+                    major_type_dict[key] = value
                 df = dao.get_all_question(table_list=question_name_list)
                 df = df[['uuid', 'question', 'options1', 'options2', 'options3', 'options4', 'options5', 'answer',
-                         'answer_nums', 'correct_nums', 'category', 'type_id', 'difficulty', 'create_on']]
+                         'answer_nums', 'correct_nums', 'category', 'type_id', 'difficulty', 'create_on',
+                         'options1_count', 'options2_count', 'options3_count', 'options4_count', 'options5_count']]
+                type_id_df['type1'] = type_id_df['type1'].map(major_type_dict)
+                type_id_dict = {}
+                for key, value in zip(type_id_df['type_id'].tolist(), type_id_df['type1'].tolist()):
+                    type_id_dict[key] = value
+                major_type = pd.DataFrame(df['type_id'].map(type_id_dict))
+                major_type.columns = ['major_type_id']
+                df = pd.concat([df, major_type], axis=1)
                 df = df.replace(np.nan, -1)
                 df['create_on'] = df['create_on'].astype(str)
                 rtn.result = df.to_dict(orient='records')
