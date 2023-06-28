@@ -35,7 +35,9 @@ class Teacher(Resource):
                 question_name_list = dao.get_question_type()['type_name'].to_list()
                 df = dao.get_all_question(table_list=question_name_list)
                 df = df[['uuid', 'question', 'options1', 'options2', 'options3', 'options4', 'options5', 'answer',
-                         'answer_nums', 'correct_nums', 'category']]
+                         'answer_nums', 'correct_nums', 'category', 'type_id', 'difficulty', 'create_on']]
+                df = df.replace(np.nan, -1)
+                df['create_on'] = df['create_on'].astype(str)
                 rtn.result = df.to_dict(orient='records')
             elif data['get_type'] == 'all_paper_type':
                 dao = StudentQuery(config)
@@ -101,7 +103,6 @@ class Teacher(Resource):
                 rtn.result.append({"student_paper": df.to_dict(orient='records')})
             else:
                 raise Exception('input date invalid')
-
 
         except Exception as e:
             self.logger.error(e, exc_info=True)
