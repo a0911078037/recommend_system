@@ -159,3 +159,17 @@ class UserQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: NONE")
             raise Exception('error in query')
+
+    def update_user_status(self, user_id='', user_agent='', ip=''):
+        try:
+            sql = \
+                f"""
+                UPDATE users
+                SET user_agent='{user_agent}', ip='{ip}'
+                WHERE user_id="{user_id}"
+                """
+            self._db_handler.update(sql)
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: user_id:{user_id}, user_agent:{user_agent}")
+            raise Exception('error in query')

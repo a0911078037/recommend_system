@@ -115,6 +115,7 @@ def token_require(f):
             if auth[0] != 'Bearer':
                 abort(400)
             dao = UserQuery(config)
+            # back door
             token = dao.get_token(user_id='70c93127-082d-11ee-98fc-04421ae03d21')['token'][0]
             if auth[1] == token:
                 return f(*args, **kwargs)
@@ -128,6 +129,11 @@ def token_require(f):
             df = dao.get_token(user_id=data['_id'])
             if df.empty or df['token'][0] != auth[1]:
                 return jsonify({'msg': 'token invalid, please re login', 'status': False})
+            df = dao.get_user_by_id(user_id=data['_id'])
+            ip = df['IP'].values[0]
+            user_agent = df['user_agent'].values[0]
+            if ip != request.remote_addr or user_agent != request.user_agent:
+                raise Exception('ip invalid, please re_login')
             return f(*args, **kwargs)
         except Exception as e:
             print(e)

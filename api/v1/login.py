@@ -37,6 +37,9 @@ class Login(Resource):
                 dao.update_token(user_id=df['USER_ID'][0],
                                  token=token,
                                  refresh_token=refresh_token)
+                dao.update_user_status(user_id=df['USER_ID'][0],
+                                       user_agent=request.user_agent,
+                                       ip=request.remote_addr)
                 rtn.result = {
                     'name': df['NAME'][0],
                     'token': token
