@@ -106,11 +106,12 @@ class Question(Resource):
                 "answer": request.form['answer'],
                 "type_id": request.form['type_id'],
                 "difficulty": request.form['difficulty'],
+                "bloom_type": request.form['bloom_type'],
                 "image": request.files.get('image') or None,
                 "category": request.form['category']
             }
             if not data["question"] or not data["options1"] or not data["options2"] or not data["answer"] \
-                    or not data["difficulty"] or not data["category"]:
+                    or not data["difficulty"] or not data["category"] or not data['bloom']:
                 raise Exception('input missing')
 
             dao = QuestionQuery(config)
@@ -127,6 +128,10 @@ class Question(Resource):
             df = dao.get_difficulty_type()
             if not (df['type'].astype(str) == data['difficulty']).any():
                 raise Exception('difficulty invalid')
+
+            df = dao.get_bloom_type()
+            if not (df['type'].astype(str) == data['bloom_type']).any():
+                raise Exception('bloom_type invalid')
 
             df = dao.get_question_category()
             if not (df['type'].astype(str) == data['category']).any():
@@ -171,7 +176,8 @@ class Question(Resource):
                 difficulty=data['difficulty'],
                 image_path=image_path,
                 category=data['category'],
-                table_name=type_id_df['type1'][0]
+                table_name=type_id_df['type1'][0],
+                bloom_type=data['bloom_type']
             )
 
             dao.update_question_type_question_count(question_type=type_id_df['type1'][0], type_id=data['type_id'])
@@ -199,6 +205,7 @@ class Question(Resource):
                 "difficulty": request.form['difficulty'],
                 "image": request.files.get('image', None),
                 "category": request.form['category'],
+                "bloom_type": request.form['bloom_type'],
                 "uid": request.form['uid'],
                 "question_type_id": request.form['question_type_id'],
                 "type_id": request.form['type_id']
@@ -229,6 +236,10 @@ class Question(Resource):
             df = dao.get_difficulty_type()
             if not (df['type'].astype(str) == data['difficulty']).any():
                 raise Exception('difficulty invalid')
+
+            df = dao.get_bloom_type()
+            if not (df['type'].astype(str) == data['bloom_type']).any():
+                raise Exception('bloom_type invalid')
 
             df = dao.get_question_type_by_table_name(table_name=type_name.lower())
             type_id_list = df['type_id'].to_list()
@@ -279,7 +290,8 @@ class Question(Resource):
                 category=data['category'],
                 table_name=type_name,
                 updated_on=updated_on,
-                type_id=data['type_id']
+                type_id=data['type_id'],
+                bloom_type=data['bloom_type']
             )
 
         except Exception as e:

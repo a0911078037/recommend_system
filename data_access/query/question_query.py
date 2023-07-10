@@ -10,24 +10,24 @@ class QuestionQuery:
 
     def insert_question(self, question=None, options1=None, options2=None, options3=None, options4=None, options5=None,
                         answer=None, type_id=None, difficulty=None, image_path=None, category=None, table_name=None,
-                        uid=None):
+                        uid=None, bloom_type=None):
         try:
             sql = \
                 f"""
                 INSERT INTO {table_name}_questions
                 (question, options1, options2, options3, options4, options5, answer, type_id, difficulty,
-                image_path, category, uuid)
-                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+                image_path, category, uuid, bloom_type)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """
             data = (question, options1, options2, options3, options4, options5, answer, type_id, int(difficulty),
-                    image_path, int(category), str(uid))
+                    image_path, int(category), str(uid), bloom_type)
             self._db_handler.insert(sql, data)
         except Exception as e:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: question:{question}, options1:{options1}, options2:{options2}, "
                               f"options3:{options3}, options4:{options4},options5:{options5}, answer:{answer}, "
                               f"type_id:{type_id}, difficulty:{difficulty}, image_path:{image_path}, "
-                              f"category:{category}, uuid:{uid}")
+                              f"category:{category}, uuid:{uid}, bloom_type:{bloom_type}")
             raise Exception('error in query')
 
     def get_question_type(self):
@@ -157,6 +157,19 @@ class QuestionQuery:
             self.logger.error(f"FUNCTION PARAM: type_id: {type_id}")
             raise Exception('error in query')
 
+    def get_bloom_type(self):
+        try:
+            sql = \
+                f"""
+                SELECT * FROM bloom_type
+                """
+            df = self._db_handler.execute_dataframe(sql)
+            return df
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f"FUNCTION PARAM: NONE")
+            raise Exception('error in query')
+
     def get_question_category(self):
         try:
             sql = \
@@ -186,14 +199,15 @@ class QuestionQuery:
 
     def update_question_by_uid(self, question=None, options1=None, options2=None, options3=None, options4=None,
                                options5=None, answer=None, difficulty=None, image_path=None, category=None,
-                               table_name=None, uid=None, updated_on=None, type_id=None):
+                               table_name=None, uid=None, updated_on=None, type_id=None, bloom_type=None):
         try:
             sql = \
                 f"""
                 UPDATE {table_name}_questions
                 SET question="{question}", options1="{options1}", options2="{options2}", options3="{options3}", 
                 options4="{options4}", options5="{options5}", answer="{answer}", difficulty="{difficulty}", 
-                image_path="{image_path}", category="{category}", updated_on="{updated_on}", type_id="{type_id}"
+                image_path="{image_path}", category="{category}", updated_on="{updated_on}", type_id="{type_id}",
+                bloom_type="{bloom_type}"
                 WHERE uuid="{uid}"
                 """
             self._db_handler.update(sql)
@@ -201,7 +215,8 @@ class QuestionQuery:
             self.logger.error(e)
             self.logger.error(f"FUNCTION PARAM: question:{question}, options1:{options1}, options2:{options2}, "
                               f"options3:{options3}, options4:{options4},options5:{options5}, answer:{answer}, "
-                              f"difficulty:{difficulty}, image_path:{image_path}, category:{category}, uuid:{uid}")
+                              f"difficulty:{difficulty}, image_path:{image_path}, category:{category}, uuid:{uid}, "
+                              f"bloom_type:{bloom_type}")
             raise Exception('error in query')
 
     def delete_question_by_uid(self, uid=None, table_name=None):
