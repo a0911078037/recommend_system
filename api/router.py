@@ -13,6 +13,8 @@ from .v1.test import Test
 from .v1.student import Student
 from .v1.tf_idf import TF_IDF
 from .v1.submit_survey import SubmitSurvey
+from .v1.question_category import QuestionCategory
+from .v1.bloom_category import BloomCategory
 
 
 router = [
@@ -28,6 +30,8 @@ router = [
     dict(resource=Student, urls=['/student'], endpoint='student'),
     dict(resource=TF_IDF, urls=['/tf_idf'], endpoint='tf_idf'),
     dict(resource=SubmitSurvey, urls=['/submit_survey'], endpoint='submit_survey'),
+    dict(resource=QuestionCategory, urls=['/question_category'], endpoint='question_category'),
+    dict(resource=BloomCategory, urls=['/bloom_category'], endpoint='bloom_category'),
     dict(resource=DifficultyType, urls=['/difficulty_type'], endpoint='difficulty_type')
 ]
 
