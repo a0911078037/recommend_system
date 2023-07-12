@@ -45,7 +45,8 @@ class Teacher(Resource):
                 df = dao.get_all_question(table_list=question_name_list)
                 df = df[['uuid', 'question', 'options1', 'options2', 'options3', 'options4', 'options5', 'answer',
                          'answer_nums', 'correct_nums', 'category', 'type_id', 'difficulty', 'create_on',
-                         'options1_count', 'options2_count', 'options3_count', 'options4_count', 'options5_count']]
+                         'options1_count', 'options2_count', 'options3_count', 'options4_count', 'options5_count',
+                         'bloom_type']]
                 type_id_df['type1'] = type_id_df['type1'].map(major_type_dict)
                 type_id_dict = {}
                 for key, value in zip(type_id_df['type_id'].tolist(), type_id_df['type1'].tolist()):

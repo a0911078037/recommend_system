@@ -111,7 +111,7 @@ class Question(Resource):
                 "category": request.form['category']
             }
             if not data["question"] or not data["options1"] or not data["options2"] or not data["answer"] \
-                    or not data["difficulty"] or not data["category"] or not data['bloom']:
+                    or not data["difficulty"] or not data["category"] or not data['bloom_type']:
                 raise Exception('input missing')
 
             dao = QuestionQuery(config)
@@ -134,7 +134,7 @@ class Question(Resource):
                 raise Exception('bloom_type invalid')
 
             df = dao.get_question_category()
-            if not (df['type'].astype(str) == data['category']).any():
+            if not (df['type'].astype(str) == data['type_name']).any():
                 raise Exception('category invalid')
             df['type'] = df['type'].astype(str)
 
@@ -147,7 +147,7 @@ class Question(Resource):
             if not data['category'] in df['type'].values:
                 raise Exception('category invalid')
 
-            if (df.loc[df['category'] == '單選']['type'].values == data['category']).any():
+            if (df.loc[df['type_name'] == '單選']['type'].values == data['category']).any():
                 if len(answer_list) > 1:
                     raise Exception(f'invalid answer, expect:{"單選"}')
             else:
@@ -247,7 +247,7 @@ class Question(Resource):
                 raise Exception('invalid type id')
 
             df = dao.get_question_category()
-            if not (df['type'].astype(str) == data['category']).any():
+            if not (df['type'].astype(str) == data['type_name']).any():
                 raise Exception('category invalid')
 
             # checking answer format and type
@@ -256,7 +256,7 @@ class Question(Resource):
                 if len(answer) > 1 or not answer.isdigit() or int(answer) > 5:
                     raise Exception('answer format error')
 
-            if (df.loc[df['category'] == '單選']['type'].astype(str).values == data['category']).any():
+            if (df.loc[df['type_name'] == '單選']['type'].astype(str).values == data['category']).any():
                 if len(answer_list) > 1:
                     raise Exception(f'invalid answer, expect:{"單選"}')
             else:

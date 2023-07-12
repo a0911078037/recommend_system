@@ -204,8 +204,8 @@ class QuestionQuery:
             sql = \
                 f"""
                 UPDATE {table_name}_questions
-                SET question="{question}", options1="{options1}", options2="{options2}", options3="{options3}", 
-                options4="{options4}", options5="{options5}", answer="{answer}", difficulty="{difficulty}", 
+                SET question='{question}', options1='{options1}', options2='{options2}', options3='{options3}', 
+                options4='{options4}', options5='{options5}', answer='{answer}', difficulty="{difficulty}", 
                 image_path="{image_path}", category="{category}", updated_on="{updated_on}", type_id="{type_id}",
                 bloom_type="{bloom_type}"
                 WHERE uuid="{uid}"
