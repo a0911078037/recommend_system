@@ -8,25 +8,25 @@ from data_access.query.user_query import UserQuery
 
 def create_token_by_refresh(refresh_token=None):
     data = jwt.decode(
-        refresh_token, key=config['API']['SECRETKEY'], algorithms='HS256'
+        refresh_token['refresh_token'], key=config['API']['SECRETKEY'], algorithms='HS256'
     )
-    refresh_time = data['refresh_token']
+    refresh_time = int(data['refresh_token'])
     if refresh_time >= int(config['API']['REFRESH_MAX']):
         raise Exception('refresh time exceed limit')
     dao = UserQuery(config)
     df = dao.get_user_by_id(user_id=data['_id'])
-    if df.empty or df['refresh_token'][0] != refresh_token:
+    if df.empty or df['refresh_token'][0] != refresh_token['refresh_token']:
         raise Exception('token invalid')
-    new_token = create_token(is_admin=df['is_admin'][0],
-                             is_teacher=df['is_teacher'][0],
-                             name=df['NAME'][0],
-                             user_id=data['_id'],
-                             refresh_time=refresh_time + 1,
-                             refresh_exp=data['exp']
-                             )
+    new_token, new_refresh_token = create_token(is_admin=df['is_admin'][0],
+                                                is_teacher=df['is_teacher'][0],
+                                                name=df['NAME'][0],
+                                                user_id=data['_id'],
+                                                refresh_time=refresh_time + 1,
+                                                refresh_exp=data['exp']
+                                                )
     dao.update_token(user_id=data['_id'],
                      token=new_token,
-                     refresh_token=refresh_token)
+                     refresh_token=new_refresh_token)
     return new_token
 
 
@@ -132,12 +132,13 @@ def token_require(f):
             df = dao.get_user_by_id(user_id=data['_id'])
             ip = df['IP'].values[0]
             user_agent = df['user_agent'].values[0]
-            if ip != request.remote_addr or user_agent != request.user_agent:
-                raise Exception('ip invalid, please re_login')
+            # if ip != request.remote_addr or user_agent != request.user_agent:
+            #     raise Exception('ip invalid, please re_login')
             return f(*args, **kwargs)
         except Exception as e:
             print(e)
             if 'Signature has expired' in e.args[0]:
                 return jsonify({'msg': 'token has expired', 'status': False})
+            return jsonify({'msg': 'token error', 'status': False})
 
     return wrapper

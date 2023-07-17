@@ -3,6 +3,8 @@ from utility.RtnMessage import RtnMessage
 from utility.logger import get_logger
 from flask import request
 from utility.auth import create_token_by_refresh
+import jwt
+from app import config
 
 
 class RefreshToken(Resource):
@@ -17,7 +19,10 @@ class RefreshToken(Resource):
             }
             if not data['refresh_token']:
                 raise Exception('input data missing')
-            new_token = create_token_by_refresh(refresh_token=data["refresh_token"])
+            refresh_token = jwt.decode(
+                data['refresh_token'], key=config['API']['SECRETKEY'], algorithms='HS256'
+            )
+            new_token = create_token_by_refresh(refresh_token=refresh_token)
             rtn.result.append(
                 {
                     "token": new_token

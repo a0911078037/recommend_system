@@ -87,7 +87,7 @@ class User(Resource):
             dao = UserQuery(config)
             df = dao.get_users(acc=data['new_acc'])
 
-            if not df.empty:
+            if len(df) > 1:
                 raise Exception('account already exist, please re consider new account')
             salt = uuid.uuid4().hex[0:10]
             new_pws = hashlib.sha256((salt + data['new_pws']).encode('utf-8')).hexdigest()
